@@ -1,0 +1,17 @@
+.dub
+docs.json
+__dummy.html
+docs/
+dlp.so
+dlp.dylib
+dlp.dll
+dlp.a
+dlp.lib
+dlp-test-*
+*.exe
+*.o
+*.obj
+*.lst
+*.a
+*.lib
+/dlp

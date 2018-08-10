@@ -1,0 +1,52 @@
+dist: trusty
+git:
+  depth: false
+
+language: d
+d:
+  - dmd
+  - ldc-1.11.0
+
+os:
+  - linux
+  - osx
+
+env:
+  global: MACOSX_DEPLOYMENT_TARGET=10.9
+
+matrix:
+  include:
+    # beta and nightly builds for DMD and LDC
+    - &entry
+      d: dmd-beta
+      os: linux
+    - <<: *entry
+      d: ldc-beta
+    - <<: *entry
+      d: dmd-nightly
+
+    # deployment
+    - &deploy
+      stage: deploy
+      if: tag IS present
+      d: ldc-beta
+      os: linux
+      script: ./tools/build_release.sh
+      deploy:
+        provider: releases
+        api_key:
+          secure: Sw5vEwezf+EzoxFeRNKk6PqsWv0HDXnC3JhVMwtaGNWAOdGc5rdZVcUIR88S5Q54eB16z1H+SHu9H/4SSdCschjjxsQmAqw/KicpjFw/puIgA96fpcQM+ixTbuXpw2YTfAn7jg9CWukDQ/3Wb70F8NV5hUPOpLPcyLloicp8Uy5LAmbvKIhegot/tzdRvKGaYjswHBFTThhiZEUFqZWMb/e/ge92Rp/Dhp+DdEb7XnPiqI/B6JRJs96KIdCj2o23GKFb83brIza8i6dsMybFLRiKhtrm1SgrFwyVdF9NRFe6/uDUJFJC8A6dWfhiYl24Pp3qCBU2SrlCEqdecBTx9SyjHfjJMvhlCYOxLNxvv86sGbmpfIIt/J0S+kAbi9tgcsGjtJhvnrHTPOy3Qd1mhg/+IrXccLSoL3zSvv7SNqPnxmA43skBdcswghjPBJyNtUk09WWnPUvcRAD6iBitQDC/ZYYC1+nkuMzGJ22tAiKlQ48tWI955kP9ClTf/pZrSMlXOuCAIaiUh7+iuR4O68XXF0AfWabGV5JV1TzNqTT4IofsdbCZbajjApVbUqvc/LB0zHzaTcchfLbUE7TS+Chc8cym+W8ebXvGN57L/7/jaaYbdtu++8bMaqDQidKo6B4krVtUxZoCTDkMHSKfxws1vThmWEZKzErNgsd//fE=
+        draft: true
+        tag_name: $TRAVIS_TAG
+        file_glob: true
+        file: dlp*.tar.xz
+        skip_cleanup: true
+        on:
+          repo: jacob-carlborg/dlp
+          tags: true
+    - <<: *deploy
+      os: osx
+
+  allow_failures:
+    - <<: *entry
+      d: dmd-nightly

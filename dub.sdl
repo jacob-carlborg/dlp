@@ -1,0 +1,31 @@
+name "dlp"
+description "Tool for processing the D language"
+authors "Jacob Carlborg"
+copyright "Copyright © 2018, Jacob Carlborg"
+license "BSL-1.0"
+
+targetType "executable"
+mainSourceFile "source/dlp/driver/main.d"
+dependency "dmd" path="vendor/dmd"
+
+preGenerateCommands "$PACKAGE_DIR/tools/generate_version.sh" platform="posix"
+preGenerateCommands "$PACKAGE_DIR/tools/generate_version.bat" platform="windows"
+
+preBuildCommands "cl /nologo /EHsc /TP /c vendor/dmd/src/dmd/backend/strtold.c /Fotmp/strtold.obj /I vendor/dmd/src/dmd/root" platform="windows-x86_64-dmd"
+preBuildCommands "cl /nologo /EHsc /TP /c vendor/dmd/src/dmd/backend/strtold.c /Fotmp/strtold.obj /I vendor/dmd/src/dmd/root" platform="windows-ldc"
+
+stringImportPaths "tmp"
+
+lflags "tmp/strtold.obj" platform="windows-x86_64-dmd"
+lflags "tmp/strtold.obj" platform="windows-ldc"
+
+buildType "release" {
+  buildOptions "optimize" "inline" platform="posix"
+  buildOptions "optimize" "inline" platform="windows-ldc"
+  buildOptions "optimize" platform="windows-dmd"
+
+  dflags "-flto=full" platform="posix-ldc"
+
+  lflags "-static" platform="linux-ldc"
+  lflags "-dead_strip" platform="osx"
+}
