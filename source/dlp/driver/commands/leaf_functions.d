@@ -2,7 +2,7 @@ module dlp.driver.commands.leaf_functions;
 
 import dlp.driver.command : Command;
 
-class LeafFunctions : Command
+class LeafFunctions : Command!()
 {
     import dmd.func : FuncDeclaration;
 
@@ -25,7 +25,7 @@ class LeafFunctions : Command
             "have a body.");
     }
 
-    override void run(const string[] args) const
+    override void run(const string[] remainingArgs) const
     {
         import std.algorithm : each, map, sort;
         import std.array : array;
@@ -38,7 +38,7 @@ class LeafFunctions : Command
         alias sortByLine = (a, b) => a.location.linnum < b.location.linnum;
         alias sortByColumn = (a, b) => a.location.charnum < b.location.charnum;
 
-        args
+        remainingArgs
             .map!(e => tuple(e, readText(e)))
             .flatMap!(e => leafFunctions(e.expand)[])
             .map!toLeafFunction

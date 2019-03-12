@@ -18,7 +18,7 @@ class Application
     import std.string : strip;
     import std.range : drop;
 
-    import dlp.driver.command : Command;
+    import dlp.driver.command : BaseCommand;
 
     enum version_ = import("version").strip.drop(1);
 
@@ -29,10 +29,16 @@ class Application
 
         Optional!string command;
         string[] remainingArgs;
+
+        this(Optional!string command = none!string, string[] remainingArgs = [])
+        {
+            this.command = command;
+            this.remainingArgs = remainingArgs;
+        }
     }
 
     private string[] args;
-    private Command[string] commands;
+    private BaseCommand[string] commands;
 
     static int start(string[] args)
     {
@@ -85,17 +91,18 @@ private:
             return false;
 
         if (result == ExitStatus.success)
-            invokeCommand(parsedArguments.command.get, parsedArguments.remainingArgs);
+            return invokeCommand(parsedArguments.command.get,
+                parsedArguments.remainingArgs);
 
         return true;
     }
 
-    void invokeCommand(const string command, const string[] args)
+    bool invokeCommand(const string command, string[] args)
     {
         import std.format : format;
 
         if (auto invoker = command in commands)
-            (*invoker).run(args);
+            return (*invoker)._run(args);
         else
             throw new CliException(format!`Unrecognized command "%s"`(command));
     }
@@ -134,20 +141,31 @@ private:
             return parsedArguments;
         }
 
-        static auto parseCommand(string[] args) pure
+        static auto parseCommand(string[] rawArgs) pure
+        in
+        {
+            assert(rawArgs.length >= 1);
+        }
+        do
         {
             import std.algorithm : startsWith;
             import std.array : empty, front;
             import std.typecons : tuple;
 
+            auto args = rawArgs[1 .. $];
+
             if (args.empty || args.front.startsWith("-"))
-                return tuple(none!string, args);
+                return tuple(none!string, rawArgs);
 
             return tuple(some(args.front), args[1 .. $]);
         }
 
-        auto parsedArguments = parseGlobalCLi(args);
-        auto t = parseCommand(parsedArguments.remainingArgs[1 .. $]);
+        auto t = parseCommand(args);
+
+        if (t[0].isPresent)
+            return new ParsedArguments(t[0], t[1]);
+
+        auto parsedArguments = parseGlobalCLi(t[1]);
         parsedArguments.command = t[0];
         parsedArguments.remainingArgs = t[1];
 
@@ -217,7 +235,7 @@ private:
         }
 
         enum helpBanner = q"BANNER
-Usage: dlp <command> [options] <input>
+Usage: dlp [options] <command> [args]
 Version: %s
 
 Options:
