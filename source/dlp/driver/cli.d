@@ -4,11 +4,6 @@ import std.getopt : GetoptResult;
 
 import dlp.core.optional;
 
-abstract class ParsedArguments
-{
-    GetoptResult getoptResult;
-}
-
 /**
  * Processes command-line arguments
  *

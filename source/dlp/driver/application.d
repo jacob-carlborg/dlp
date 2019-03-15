@@ -1,6 +1,7 @@
 module dlp.driver.application;
 
 import std.array;
+import std.getopt : GetoptResult;
 import std.stdio;
 
 import dlp.driver.cli;
@@ -22,23 +23,11 @@ class Application
 
     enum version_ = import("version").strip.drop(1);
 
-    static final class ParsedArguments : .ParsedArguments
+    private
     {
-        bool version_;
-        bool help;
-
-        Optional!string command;
-        string[] remainingArgs;
-
-        this(Optional!string command = none!string, string[] remainingArgs = [])
-        {
-            this.command = command;
-            this.remainingArgs = remainingArgs;
-        }
+        string[] args;
+        BaseCommand[string] commands;
     }
-
-    private string[] args;
-    private BaseCommand[string] commands;
 
     static int start(string[] args)
     {
@@ -58,6 +47,23 @@ class Application
     }
 
 private:
+
+    static struct Arguments
+    {
+        @("version|V", "Print the version of DLP and exit.")
+        bool version_;
+
+        bool help;
+        Optional!string command;
+        string[] remainingArgs;
+        GetoptResult getoptResult;
+
+        this(Optional!string command, string[] remainingArgs)
+        {
+            this.command = command;
+            this.remainingArgs = remainingArgs;
+        }
+    }
 
     int run()
     {
@@ -83,16 +89,14 @@ private:
         import dlp.driver.commands.leaf_functions : LeafFunctions;
 
         registerCommands();
-        auto parsedArguments = parseCli();
-
-        const result = handleArguments(parsedArguments);
+        auto arguments = parseCli();
+        const result = handleArguments(arguments);
 
         if (result == ExitStatus.fail)
             return false;
 
         if (result == ExitStatus.success)
-            return invokeCommand(parsedArguments.command.get,
-                parsedArguments.remainingArgs);
+            return invokeCommand(arguments.command.get, arguments.remainingArgs);
 
         return true;
     }
@@ -120,25 +124,20 @@ private:
         commands[command.name] = command;
     }
 
-    ParsedArguments parseCli()
+    Arguments parseCli()
     {
         import std.typecons : tuple;
 
-        static ParsedArguments parseGlobalCLi(string[] args)
+        static Arguments parseGlobalCLi(string[] args)
         {
-            import std.getopt : getopt, defaultGetoptPrinter;
+            Arguments arguments;
+            auto result = parseCommandLine(args, arguments);
 
-            auto parsedArguments = new ParsedArguments;
+            arguments.getoptResult = result;
+            arguments.remainingArgs = args;
+            arguments.help = result.helpWanted;
 
-            auto result = getopt(args,
-                "version|V", "Print the version of DLP and exit.", &parsedArguments.version_
-            );
-
-            parsedArguments.remainingArgs = args;
-            parsedArguments.help = result.helpWanted;
-            parsedArguments.getoptResult = result;
-
-            return parsedArguments;
+            return arguments;
         }
 
         static auto parseCommand(string[] rawArgs) pure
@@ -163,35 +162,35 @@ private:
         auto t = parseCommand(args);
 
         if (t[0].isPresent)
-            return new ParsedArguments(t[0], t[1]);
+            return Arguments(t[0], t[1]);
 
-        auto parsedArguments = parseGlobalCLi(t[1]);
-        parsedArguments.command = t[0];
-        parsedArguments.remainingArgs = t[1];
+        auto arguments = parseGlobalCLi(t[1]);
+        arguments.command = t[0];
+        arguments.remainingArgs = t[1];
 
-        return parsedArguments;
+        return arguments;
     }
 
-    ExitStatus handleArguments(ParsedArguments parsedArguments)
+    ExitStatus handleArguments(const ref Arguments arguments)
     {
         import std.stdio : stderr;
 
-        if (parsedArguments.help)
+        if (arguments.help)
         {
-            printHelp(parsedArguments);
+            printHelp(arguments);
             return ExitStatus.stop;
         }
 
-        if (parsedArguments.version_)
+        if (arguments.version_)
         {
             printVersion();
             return ExitStatus.stop;
         }
 
-        if (parsedArguments.command.empty)
+        if (arguments.command.empty)
         {
             stderr.writeln("No command specified");
-            printHelp(parsedArguments);
+            printHelp(arguments);
             return ExitStatus.fail;
         }
 
@@ -204,7 +203,7 @@ private:
         writeln(version_);
     }
 
-    void printHelp(ParsedArguments parsedArguments)
+    void printHelp(const ref Arguments arguments)
     {
         import std.format : format;
         import std.getopt : defaultGetoptPrinter;
@@ -224,7 +223,7 @@ private:
                 .reduce!max;
 
             alias formatCommand = e => format(
-                "    %-*s %s\n", maxLength + 1, e.name, e.shortHelp
+                "    %-*s %s", maxLength + 1, e.name, e.shortHelp
             );
 
             return commands
@@ -237,13 +236,14 @@ private:
         enum helpBanner = q"BANNER
 Usage: dlp [options] <command> [args]
 Version: %s
+BANNER".format(version_).strip;
 
-Options:
-BANNER".format(version_);
-
-        defaultGetoptPrinter(helpBanner, parsedArguments.getoptResult.options);
-
-        writef("\nCommands:\n%s", generateCommandsHelp());
+        .printHelp(
+            helpBanner,
+            arguments,
+            arguments.getoptResult,
+            some("\n\nCommands:\n" ~ generateCommandsHelp)
+        );
     }
 }
 
