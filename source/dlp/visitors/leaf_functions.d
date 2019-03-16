@@ -10,7 +10,7 @@ import dlp.visitors.utility;
 Set!FuncDeclaration leafFunctions(
     const string filename,
     const string content,
-    const string[] importPaths
+    const string[] importPaths = []
 )
 {
     return runFullFrontend(filename, content, importPaths)

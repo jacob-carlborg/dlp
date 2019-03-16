@@ -39,15 +39,20 @@ class LeafFunctions : Command!(Arguments)
     override void run(ref Arguments args, const string[] remainingArgs) const
     {
         import std.algorithm : each, map, sort;
-        import std.array : array;
+        import std.array : array, empty;
         import std.file : readText;
+        import std.exception : enforce;
         import std.typecons : tuple;
 
         import dlp.core.algorithm : flatMap;
+        import dlp.driver.utility : MissingArgumentException;
         import dlp.visitors.leaf_functions : leafFunctions;
 
         alias sortByLine = (a, b) => a.location.linnum < b.location.linnum;
         alias sortByColumn = (a, b) => a.location.charnum < b.location.charnum;
+
+        enforce!MissingArgumentException(!remainingArgs.empty,
+            "No input files were given");
 
         remainingArgs
             .map!(e => tuple(e, readText(e)))
@@ -82,4 +87,21 @@ private struct LeafFunction
 
     Loc location;
     string fullyQualifiedName;
+}
+
+version (unittest):
+
+import dlp.core.test;
+
+@test("no arguments") unittest
+{
+    import std.exception : assertThrown;
+    import dlp.driver.utility : MissingArgumentException;
+
+    Arguments arguments;
+    string[] inputFiles = [];
+
+    assertThrown!MissingArgumentException(
+        new LeafFunctions().run(arguments, inputFiles)
+    );
 }
