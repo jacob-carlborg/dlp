@@ -1,11 +1,11 @@
-dist: trusty
+dist: xenial
 git:
   depth: false
 
 language: d
 d:
   - dmd
-  - ldc-1.11.0
+  - ldc
 
 os:
   - linux
