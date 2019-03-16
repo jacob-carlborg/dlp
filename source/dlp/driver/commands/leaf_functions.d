@@ -55,7 +55,6 @@ class LeafFunctions : Command!(Arguments)
             .map!toLeafFunction
             .array
             .sort!sortByLine
-            .release
             .sort!sortByColumn // we sort by column since there can be multiple functions on the same line
             .each!printResult;
     }
