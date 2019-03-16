@@ -6,6 +6,7 @@ abstract class BaseCommand
 {
     abstract string name() const;
     abstract string shortHelp() const;
+    abstract string usageHeader() const;
 
     // Not part of the public API.
     abstract bool _run(string[] rawArgs) const;
@@ -21,9 +22,10 @@ abstract class Command(Arguments = void) : BaseCommand
     override bool _run(string[] rawArgs) const
     {
         static if (is(Arguments == void))
-            run(rawArgs);
+            run(rawArgs[1 .. $]);
         else
         {
+            import std.format : format;
             import dlp.driver.cli : parseCommandLine, printHelp;
 
             Arguments arguments;
@@ -31,11 +33,12 @@ abstract class Command(Arguments = void) : BaseCommand
 
             if (result.helpWanted)
             {
-                printHelp("Usage: dlp " ~ name, arguments, result);
+                const header = format!"Usage: dlp %s %s"(name, usageHeader);
+                printHelp(header, arguments, result);
                 return true;
             }
 
-            run(arguments, rawArgs);
+            run(arguments, rawArgs[1 .. $]);
         }
 
         return true;

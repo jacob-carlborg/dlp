@@ -156,7 +156,7 @@ private:
             if (args.empty || args.front.startsWith("-"))
                 return tuple(none!string, rawArgs);
 
-            return tuple(some(args.front), args[1 .. $]);
+            return tuple(some(args.front), rawArgs[0] ~ args[1 .. $]);
         }
 
         auto t = parseCommand(args);

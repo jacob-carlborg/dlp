@@ -7,17 +7,25 @@ import dmd.visitor : SemanticTimeTransitiveVisitor;
 import dlp.core.set;
 import dlp.visitors.utility;
 
-Set!FuncDeclaration leafFunctions(const string filename, const string content)
+Set!FuncDeclaration leafFunctions(
+    const string filename,
+    const string content,
+    const string[] importPaths
+)
 {
-    return runFullFrontend(filename, content)
+    return runFullFrontend(filename, content, importPaths)
         .leafFunctions();
 }
 
 private:
 
-Module runFullFrontend(const string filename, const string content)
+Module runFullFrontend(
+    const string filename,
+    const string content,
+    const string[] importPaths)
 {
     import std.algorithm : each;
+    import std.range : chain;
 
     import dmd.frontend : addImport, initDMD, findImportPaths, fullSemantic,
         parseModule, parseImportPathsFromConfig;
@@ -25,10 +33,10 @@ Module runFullFrontend(const string filename, const string content)
 
     global.params.mscoff = global.params.is64bit;
     initDMD();
-    // import std.path : expandTilde;
-    // const binPath = "~/.dvm/compilers/dmd-2.081.1/osx/bin".expandTilde;
-    // parseImportPathsFromConfig(binPath ~ "/dmd.conf", binPath).each!addImport;
-    findImportPaths.each!addImport;
+
+    findImportPaths
+        .chain(importPaths)
+        .each!addImport;
 
     auto t = parseModule(filename, content);
 

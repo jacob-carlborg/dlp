@@ -13,7 +13,7 @@ import dlp.core.optional;
  *
  *  Returns: getopt parse result
  */
-GetoptResult parseCommandLine(Arguments)(string[] rawArgs, ref Arguments arguments)
+GetoptResult parseCommandLine(Arguments)(ref string[] rawArgs, ref Arguments arguments)
 {
     import std.getopt : getopt;
 

@@ -2,7 +2,13 @@ module dlp.driver.commands.leaf_functions;
 
 import dlp.driver.command : Command;
 
-class LeafFunctions : Command!()
+private struct Arguments
+{
+    @("import-path|i", "Add <path> as an import path.")
+    string[] importPaths;
+}
+
+class LeafFunctions : Command!(Arguments)
 {
     import dmd.func : FuncDeclaration;
 
@@ -18,6 +24,11 @@ class LeafFunctions : Command!()
         return "Prints all leaf functions.";
     }
 
+    override string usageHeader() const
+    {
+        return "[options] <input>";
+    }
+
     override Optional!string longHelp() const
     {
         return some("Prints all leaf functions to standard out. A leaf function " ~
@@ -25,7 +36,7 @@ class LeafFunctions : Command!()
             "have a body.");
     }
 
-    override void run(const string[] remainingArgs) const
+    override void run(ref Arguments args, const string[] remainingArgs) const
     {
         import std.algorithm : each, map, sort;
         import std.array : array;
@@ -40,7 +51,7 @@ class LeafFunctions : Command!()
 
         remainingArgs
             .map!(e => tuple(e, readText(e)))
-            .flatMap!(e => leafFunctions(e.expand)[])
+            .flatMap!(e => leafFunctions(e.expand, args.importPaths)[])
             .map!toLeafFunction
             .array
             .sort!sortByLine
