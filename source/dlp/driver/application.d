@@ -53,6 +53,9 @@ private:
         @("version|V", "Print the version of DLP and exit.")
         bool version_;
 
+        @("frontend-version", "Print the version of the frontend DLP is using")
+        bool frontendVersion;
+
         bool help;
         Optional!string command;
         string[] remainingArgs;
@@ -187,6 +190,12 @@ private:
             return ExitStatus.stop;
         }
 
+        if (arguments.frontendVersion)
+        {
+            printFrontendVersion();
+            return ExitStatus.stop;
+        }
+
         if (arguments.command.empty)
         {
             stderr.writeln("No command specified");
@@ -201,6 +210,18 @@ private:
     {
         import std.stdio : writeln;
         writeln(version_);
+    }
+
+    void printFrontendVersion()
+    {
+        import std.stdio : writeln;
+        import std.string : fromStringz;
+        import dmd.globals : global;
+
+        global._init();
+        scope(exit) global.deinitialize();
+
+        writeln(global._version.fromStringz);
     }
 
     void printHelp(const ref Arguments arguments)
