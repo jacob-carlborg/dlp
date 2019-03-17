@@ -1,28 +1,35 @@
 import std.file : exists, mkdirRecurse, readText, write;
-import std.path : buildPath;
+import std.exception : enforce;
+import std.path : buildPath, buildNormalizedPath, dirName;
 import std.process : execute, env = environment;
 import std.string : strip;
 
-enum outputDirectory = "tmp";
+enum rootDirectory = __FILE_FULL_PATH__.dirName.buildNormalizedPath("..");
+enum outputDirectory = rootDirectory.buildPath("tmp");
 enum versionFile = "version";
 
 void main()
 {
-    const outputDirectory = env.get("DUB_PACKAGE_DIR", ".").buildPath("tmp");
-
     mkdirRecurse(outputDirectory);
 
     outputDirectory
-        .buildPath("version")
+        .buildPath(versionFile)
         .updateIfChanged(generateVersion);
 }
 
 string generateVersion()
 {
-    const result = execute(["git", "describe", "--dirty", "--tags", "--always"]);
+    const args = [
+        "git",
+        "-C", rootDirectory,
+        "describe",
+        "--dirty",
+        "--tags",
+        "--always"
+    ];
 
-    if (result.status != 0)
-        throw new Exception("Failed to execute 'git describe'");
+    const result = execute(args);
+    enforce(result.status == 0, "Failed to execute 'git describe'");
 
     return result.output.strip;
 }
