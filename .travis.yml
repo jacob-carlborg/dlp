@@ -29,7 +29,7 @@ matrix:
     - &deploy
       stage: deploy
       if: tag IS present
-      d: ldc-beta
+      d: ldc
       os: linux
       script: ./tools/build_release.sh
       deploy:
