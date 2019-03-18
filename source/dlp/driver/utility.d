@@ -1,5 +1,7 @@
 module dlp.driver.utility;
 
+import dmd.globals : Loc;
+
 class MissingArgumentException : Exception
 {
     this(
@@ -21,4 +23,16 @@ class MissingArgumentException : Exception
     {
         super(msg, file, line, nextInChain);
     }
+}
+
+string toString(const ref Loc location) pure
+{
+    import std.format : format;
+    import std.string : fromStringz;
+
+    return format!"%s:%s:%s"(
+        location.filename.fromStringz,
+        location.linnum,
+        location.charnum
+    );
 }

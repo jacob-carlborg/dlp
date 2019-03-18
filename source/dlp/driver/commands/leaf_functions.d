@@ -73,11 +73,9 @@ class LeafFunctions : Command!(Arguments)
 
     static void printResult(LeafFunction leafFunction)
     {
-        import std.string : fromStringz;
-        import std.stdio : writefln;
+        import std.stdio : writeln;
 
-        const location = leafFunction.location.toChars.fromStringz;
-        writefln("%s: %s", location, leafFunction.fullyQualifiedName);
+        writeln(leafFunction);
     }
 }
 
@@ -87,6 +85,14 @@ private struct LeafFunction
 
     Loc location;
     string fullyQualifiedName;
+
+    string toString() const pure
+    {
+        import std.format : format;
+        import dlp.driver.utility : toString;
+
+        return format!"%s: %s"(location.toString, fullyQualifiedName);
+    }
 }
 
 version (unittest):

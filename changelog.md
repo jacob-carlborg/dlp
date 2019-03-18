@@ -6,6 +6,7 @@
 * Added a flag, `--frontend-version`, which will print the version of the
 frontend DLP is using
 * Updated the D frontend DLP is using to DMD 2.085.0+ ([dd94ef465](https://github.com/dlang/dmd/commit/dd94ef465342d47a94f6c587638c49ce42f54590))
+* New formatting of locations
 
 ### `leaf-funcions`
 
