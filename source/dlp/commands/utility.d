@@ -1,5 +1,6 @@
 module dlp.commands.utility;
 
+import dmd.dmodule : Module;
 import dmd.dsymbol : Dsymbol;
 import dmd.globals : Global;
 import dmd.root.outbuffer : OutBuffer;
@@ -52,4 +53,34 @@ void handleDiagnosticErrors()
 bool hasErrors(const ref Global global)
 {
     return global.errors > 0;
+}
+
+Module runFullFrontend(
+    const string filename,
+    const string content,
+    const string[] importPaths)
+{
+    import std.algorithm : each;
+    import std.range : chain;
+
+    import dmd.frontend : addImport, initDMD, findImportPaths, fullSemantic,
+        parseModule, parseImportPathsFromConfig;
+    import dmd.globals : global;
+
+    global.params.mscoff = global.params.is64bit;
+    initDMD();
+
+    findImportPaths
+        .chain(importPaths)
+        .each!addImport;
+
+    auto t = parseModule(filename, content);
+
+    if (t.diagnostics.hasErrors)
+        throw new DiagnosticsException(t.diagnostics);
+
+    fullSemantic(t.module_);
+    handleDiagnosticErrors();
+
+    return t.module_;
 }

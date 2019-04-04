@@ -19,36 +19,6 @@ Set!FuncDeclaration leafFunctions(
 
 private:
 
-Module runFullFrontend(
-    const string filename,
-    const string content,
-    const string[] importPaths)
-{
-    import std.algorithm : each;
-    import std.range : chain;
-
-    import dmd.frontend : addImport, initDMD, findImportPaths, fullSemantic,
-        parseModule, parseImportPathsFromConfig;
-    import dmd.globals : global;
-
-    global.params.mscoff = global.params.is64bit;
-    initDMD();
-
-    findImportPaths
-        .chain(importPaths)
-        .each!addImport;
-
-    auto t = parseModule(filename, content);
-
-    if (t.diagnostics.hasErrors)
-        throw new DiagnosticsException(t.diagnostics);
-
-    fullSemantic(t.module_);
-    handleDiagnosticErrors();
-
-    return t.module_;
-}
-
 Set!FuncDeclaration leafFunctions(Module module_)
 {
     extern (C++) static class Visitor : SemanticTimeTransitiveVisitor
