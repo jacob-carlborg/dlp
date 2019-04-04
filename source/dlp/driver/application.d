@@ -73,7 +73,7 @@ private:
         import std.stdio : stderr;
         import std.array : empty;
 
-        import dlp.visitors.utility : DiagnosticsException;
+        import dlp.commands.utility : DiagnosticsException;
 
         try
             return runImplementation() ? 0 : 1;

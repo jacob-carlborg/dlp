@@ -1,11 +1,11 @@
-module dlp.visitors.leaf_functions;
+module dlp.commands.leaf_functions;
 
 import dmd.func : FuncDeclaration;
 import dmd.dmodule : Module;
 import dmd.visitor : SemanticTimeTransitiveVisitor;
 
 import dlp.core.set;
-import dlp.visitors.utility;
+import dlp.commands.utility;
 
 Set!FuncDeclaration leafFunctions(
     const string filename,

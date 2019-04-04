@@ -1,4 +1,4 @@
-module dlp.visitors.utility;
+module dlp.commands.utility;
 
 import dmd.dsymbol : Dsymbol;
 import dmd.globals : Global;

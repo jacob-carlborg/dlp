@@ -46,7 +46,7 @@ class LeafFunctions : Command!(Arguments)
 
         import dlp.core.algorithm : flatMap;
         import dlp.driver.utility : MissingArgumentException;
-        import dlp.visitors.leaf_functions : leafFunctions;
+        import dlp.commands.leaf_functions : leafFunctions;
 
         alias sortByLine = (a, b) => a.location.linnum < b.location.linnum;
         alias sortByColumn = (a, b) => a.location.charnum < b.location.charnum;
@@ -66,7 +66,7 @@ class LeafFunctions : Command!(Arguments)
 
     static LeafFunction toLeafFunction(FuncDeclaration func)
     {
-        import dlp.visitors.utility : fullyQualifiedName;
+        import dlp.commands.utility : fullyQualifiedName;
 
         return LeafFunction(func.loc, func.fullyQualifiedName);
     }
