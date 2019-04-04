@@ -221,7 +221,7 @@ private:
         global._init();
         scope(exit) global.deinitialize();
 
-        writeln(global._version.fromStringz);
+        writeln(global._version);
     }
 
     void printHelp(const ref Arguments arguments)
