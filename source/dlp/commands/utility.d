@@ -1,5 +1,6 @@
 module dlp.commands.utility;
 
+import dmd.astcodegen : ASTCodegen;
 import dmd.dmodule : Module;
 import dmd.dsymbol : Dsymbol;
 import dmd.globals : Global;
@@ -55,7 +56,17 @@ bool hasErrors(const ref Global global)
     return global.errors > 0;
 }
 
-Module runFullFrontend(
+Module runFullFrontend(Ast = ASTCodegen)(
+    const string filename,
+    const string content,
+    const string[] importPaths)
+{
+
+    return runParser!Ast(filename, content, importPaths)
+        .runSemanticAnalyzer();
+}
+
+Module runParser(Ast = ASTCodegen)(
     const string filename,
     const string content,
     const string[] importPaths)
@@ -63,7 +74,7 @@ Module runFullFrontend(
     import std.algorithm : each;
     import std.range : chain;
 
-    import dmd.frontend : addImport, initDMD, findImportPaths, fullSemantic,
+    import dmd.frontend : addImport, initDMD, findImportPaths,
         parseModule, parseImportPathsFromConfig;
     import dmd.globals : global;
 
@@ -74,13 +85,20 @@ Module runFullFrontend(
         .chain(importPaths)
         .each!addImport;
 
-    auto t = parseModule(filename, content);
+    auto t = parseModule!Ast(filename, content);
 
     if (t.diagnostics.hasErrors)
         throw new DiagnosticsException(t.diagnostics);
 
-    fullSemantic(t.module_);
+    return t.module_;
+}
+
+Module runSemanticAnalyzer(Module module_)
+{
+    import dmd.frontend : fullSemantic;
+
+    fullSemantic(module_);
     handleDiagnosticErrors();
 
-    return t.module_;
+    return module_;
 }
