@@ -179,3 +179,107 @@ unittest
 
     assert(Foo(3).getMember!"foo" == 3);
 }
+
+/// Detect whether type `T` is an aggregate.
+enum isAggregateType(alias T) =
+    is(T == struct) ||
+    is(T == union) ||
+    is(T == class) ||
+    is(T == interface);
+
+/// ditto
+enum isAggregateType(T) =
+    is(T == struct) ||
+    is(T == union) ||
+    is(T == class) ||
+    is(T == interface);
+
+///
+@safe unittest
+{
+    class C;
+    union U;
+    struct S;
+    interface I;
+
+    static assert( isAggregateType!C);
+    static assert( isAggregateType!U);
+    static assert( isAggregateType!S);
+    static assert( isAggregateType!I);
+    static assert(!isAggregateType!void);
+    static assert(!isAggregateType!string);
+    static assert(!isAggregateType!(int[]));
+    static assert(!isAggregateType!(C[string]));
+    static assert(!isAggregateType!(void delegate(int)));
+}
+
+/// Evaluates to `true` if `func` has a `this` reference.
+bool hasThisReference(alias func)()
+{
+    assertCallable!func;
+
+    alias Parent = __traits(parent, func);
+
+    return isAggregateType!Parent && !__traits(isStaticFunction, func);
+}
+
+///
+@safe unittest
+{
+    static void foo() {}
+
+    static class Foo
+    {
+        static void bar() {}
+    }
+
+    assert(hasThisReference!(Object.toString));
+    assert(!hasThisReference!foo);
+    assert(!hasThisReference!(Foo.bar));
+}
+
+/// Evaluates to `true` if `func` has a context.
+bool hasContext(alias func)()
+{
+    assertCallable!func;
+
+    static if (is(typeof(func) == delegate))
+        return true;
+    else static if (is(typeof(*func) == function))
+        return false;
+    else
+        return __traits(isNested, func) || hasThisReference!func;
+}
+
+///
+@safe unittest
+{
+    static void noContext() {}
+    void context() {}
+
+    class Foo
+    {
+        static void noContext() {}
+        void context() {}
+    }
+
+    void delegate() a;
+    void function() b;
+
+    assert(hasContext!a);
+    assert(hasContext!context);
+    assert(hasContext!(Foo.context));
+
+    assert(!hasContext!b);
+    assert(!hasContext!noContext);
+    assert(!hasContext!(Foo.noContext));
+}
+
+private void assertCallable(alias symbol)()
+{
+    import std.traits : isCallable;
+
+    static assert(isCallable!symbol,
+        `The given symbol "` ~ symbol.stringof ~ `" of type "` ~
+        typeof(symbol).stringof ~ `" is not callable`);
+}
