@@ -275,6 +275,45 @@ bool hasContext(alias func)()
     assert(!hasContext!(Foo.noContext));
 }
 
+/// Evaluates to the `this` type of the given callable symbol.
+template ThisType(alias func)
+{
+    import std.traits : CopyTypeQualifiers, isCallable;
+
+    static assert(hasThisReference!func,
+        `The given symbol "` ~ func.stringof ~ `" of type "` ~
+        typeof(func).stringof ~ `" does not have a this type`);
+
+    alias ThisType = CopyTypeQualifiers!(typeof(func), __traits(parent, func));
+}
+
+///
+@safe unittest
+{
+    static class Expression
+    {
+        void a() {}
+        void b() const {}
+        void c() immutable {}
+        void d() inout {}
+
+        void aShared() shared {}
+        void bShared() shared const {}
+        void cShared() shared immutable {}
+        void dShared() shared inout {}
+    }
+
+    assert(is(ThisType!(Expression.a) == Expression));
+    assert(is(ThisType!(Expression.b) == const Expression));
+    assert(is(ThisType!(Expression.c) == immutable Expression));
+    assert(is(ThisType!(Expression.d) == inout Expression));
+
+    assert(is(ThisType!(Expression.aShared) == shared Expression));
+    assert(is(ThisType!(Expression.bShared) == shared const Expression));
+    assert(is(ThisType!(Expression.cShared) == shared immutable Expression));
+    assert(is(ThisType!(Expression.dShared) == shared inout Expression));
+}
+
 private void assertCallable(alias symbol)()
 {
     import std.traits : isCallable;
