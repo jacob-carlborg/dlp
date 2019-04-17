@@ -1,5 +1,12 @@
 # DLP Changelog
 
+## Unreleased
+
+### New/Changed Features
+
+* Add new command, `infer-attributes`, which will infer the attributes of all
+regular functions.
+
 ## 0.1.0
 ### New/Changed Features
 

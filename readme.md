@@ -29,8 +29,24 @@ $ cat test.d
 void main()
 {
 }
-$ dlp leaf-functions test
-test.d(1): test.d.main
+$ dlp leaf-functions test.d
+test.d:1:6: test.d.main
+```
+
+* **infer-attributes** - Prints the inferred attributes of all functions that
+  are normally not inferred. These are regular functions and methods. Templates,
+  nested functions and lambdas are inferred by the compiler and will not be
+  included by this command
+
+### Usage
+
+```
+$ cat test.d
+void main()
+{
+}
+$ dlp infer-attributes test.d
+test.d:1:6: main: pure nothrow @nogc @safe
 ```
 
 ## Building

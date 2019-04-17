@@ -116,8 +116,10 @@ private:
 
     void registerCommands()
     {
+        import dlp.driver.commands.infer_attributes : InferAttributes;
         import dlp.driver.commands.leaf_functions : LeafFunctions;
 
+        registerCommand!InferAttributes;
         registerCommand!LeafFunctions;
     }
 

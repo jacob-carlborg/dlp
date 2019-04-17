@@ -118,20 +118,6 @@ struct Optional(T)
         assert(a.get == 3);
     }
 
-    T or(lazy T alternativeValue)
-    {
-        return isPresent ? value : alternativeValue;
-    }
-
-    unittest
-    {
-        Optional!int a = 3;
-        assert(a.or(4) == 3);
-
-        Optional!int b = none;
-        assert(b.or(4) == 4);
-    }
-
     bool empty() const
     {
         return !isPresent;
@@ -305,4 +291,18 @@ Optional!T none(T)()
 unittest
 {
     assert(!none!int.isPresent);
+}
+
+T or(Range, T)(Range range, lazy T alternativeValue)
+{
+    return range.empty ? alternativeValue : range.front;
+}
+
+unittest
+{
+    Optional!int a = 3;
+    assert(a.or(4) == 3);
+
+    Optional!int b = none;
+    assert(b.or(4) == 4);
 }
