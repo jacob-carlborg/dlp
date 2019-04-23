@@ -18,11 +18,12 @@ Mavericks (10.9) and later.
 
 ## Commands
 
-* **leaf-functions** - Prints all leaf functions to standard out. A leaf
-  function is a function that doesn't call any other functions, or doesn't have
-  a body.
+### `leaf-functions`
 
-### Usage
+Prints all leaf functions to standard out. A leaf function is a function that
+doesn't call any other functions, or doesn't have a body.
+
+#### Usage
 
 ```
 $ cat test.d
@@ -33,12 +34,14 @@ $ dlp leaf-functions test.d
 test.d:1:6: test.d.main
 ```
 
-* **infer-attributes** - Prints the inferred attributes of all functions that
-  are normally not inferred. These are regular functions and methods. Templates,
-  nested functions and lambdas are inferred by the compiler and will not be
-  included by this command
+### `infer-attributes`
 
-### Usage
+Prints the inferred attributes of all functions that are normally not inferred
+by the compiler. These are regular functions and methods. Templates, nested
+functions and lambdas are inferred by the compiler and will not be included by
+this command
+
+#### Usage
 
 ```
 $ cat test.d
