@@ -251,7 +251,8 @@ const(Attributes[FuncDeclaration]) inferAttributes(Module module_)
             if (cast(void*) func !in this.declaredAttributes)
                 return;
 
-            assert(func.isPure != PURE.fwdref);
+            if (func.type)
+                assert(func.isPure != PURE.fwdref);
 
             const declaredAttributes = this.declaredAttributes[cast(void*) func];
             const inferredAttributes = extractAttributes(func, []);
@@ -293,7 +294,10 @@ const(Attributes[FuncDeclaration]) inferAttributes(Module module_)
     scope visitor = new Visitor(parseTimeVisitor.declaredAttributes);
     module_.accept(visitor);
 
-    return cast(Attributes[FuncDeclaration]) visitor.inferredAttributes;
+    if (visitor.inferredAttributes.length == 0)
+        return null;
+    else
+        return cast(Attributes[FuncDeclaration]) visitor.inferredAttributes;
 }
 
 version (unittest):
@@ -432,6 +436,64 @@ void suppressedVerrorPrint(const ref Loc, Color, const(char)*, const(char)*,
     };
 
     assert(inferAttributesEqualsAttributes(content, expected));
+}
+
+@test("function without body") unittest
+{
+    mixin(setup);
+
+    enum content = q{
+        void foo();
+    };
+
+    assert(inferAttributes("test.d", content).length == 0);
+}
+
+@test("template") unittest
+{
+    mixin(setup);
+
+    enum content = q{
+        void foo()() {}
+    };
+
+    assert(inferAttributes("test.d", content).length == 0);
+}
+
+@test("lambda") unittest
+{
+    mixin(setup);
+
+    enum content = q{
+        alias foo = a => a + 2;
+    };
+
+    assert(inferAttributes("test.d", content).length == 0);
+}
+
+@test("nested function") unittest
+{
+    mixin(setup);
+
+    enum content = q{
+        void foo()
+        {
+            void bar() {}
+        }
+    };
+
+    assert(inferAttributes("test.d", content).length == 1);
+}
+
+@test("lambda") unittest
+{
+    mixin(setup);
+
+    enum content = q{
+        alias foo = a => a + 2;
+    };
+
+    assert(inferAttributes("test.d", content).length == 0);
 }
 
 @test("declared as @nogc") unittest
@@ -645,6 +707,20 @@ void suppressedVerrorPrint(const ref Loc, Color, const(char)*, const(char)*,
     };
 
     assert(inferAttributesEqualsAttributes(content, expected));
+}
+
+@test("disabled postblit in template struct") unittest
+{
+    mixin(setup);
+
+    enum content = q{
+        struct Array()
+        {
+            @disable this(this);
+        }
+    };
+
+    assert(inferAttributes("test.d", content).length == 0);
 }
 
 @test("constructor") unittest
