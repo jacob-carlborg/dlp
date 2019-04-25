@@ -11,13 +11,7 @@ dependency "dmd" path="vendor/dmd"
 preGenerateCommands "$$DC -run $PACKAGE_DIR/tools/generate_version.d" platform="posix"
 preGenerateCommands "%DC% -run $PACKAGE_DIR/tools/generate_version.d" platform="windows"
 
-preBuildCommands "cl /nologo /EHsc /TP /c vendor/dmd/src/dmd/backend/strtold.c /Fotmp/strtold.obj /I vendor/dmd/src/dmd/root" platform="windows-x86_64-dmd"
-preBuildCommands "cl /nologo /EHsc /TP /c vendor/dmd/src/dmd/backend/strtold.c /Fotmp/strtold.obj /I vendor/dmd/src/dmd/root" platform="windows-ldc"
-
 stringImportPaths "tmp"
-
-lflags "tmp/strtold.obj" platform="windows-x86_64-dmd"
-lflags "tmp/strtold.obj" platform="windows-ldc"
 
 buildType "release" {
   buildOptions "optimize" "inline" platform="posix"
