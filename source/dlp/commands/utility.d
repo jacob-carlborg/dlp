@@ -73,6 +73,21 @@ void addStringImport(const(char)[] path)
     global.params.fileImppath.push(path.toStringz);
 }
 
+void secondStateInit()
+{
+    import dmd.globals : CHECKENABLE, global;
+
+    with (global.params)
+    {
+        useIn = CHECKENABLE.on;
+        useInvariants = CHECKENABLE.on;
+        useOut = CHECKENABLE.on;
+        useArrayBounds = CHECKENABLE.on;
+        useAssert = CHECKENABLE.on;
+        useSwitchError = CHECKENABLE.on;
+    }
+}
+
 Module runFullFrontend(Ast = ASTCodegen)(
     const string filename,
     const string content,
@@ -98,6 +113,7 @@ Module runParser(Ast = ASTCodegen)(
 
     global.params.mscoff = global.params.is64bit;
     initDMD();
+    secondStateInit();
 
     findImportPaths
         .chain(importPaths)
