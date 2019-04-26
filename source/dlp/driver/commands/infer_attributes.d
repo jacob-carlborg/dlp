@@ -1,11 +1,10 @@
 module dlp.driver.commands.infer_attributes;
 
-import dlp.driver.command : Command;
+import dlp.driver.command : Command, StandardArguments;
 
-private struct Arguments
+private class Arguments : StandardArguments
 {
-    @("import-path|i", "Add <path> as an import path.")
-    string[] importPaths;
+
 }
 
 class InferAttributes : Command!(Arguments)
@@ -60,9 +59,13 @@ class InferAttributes : Command!(Arguments)
         enforce!MissingArgumentException(!remainingArgs.empty,
             "No input files were given");
 
+        alias infer = e => inferAttributes(
+            e.expand, args.importPaths, args.stringImportPaths)
+            .byKeyValue;
+
         remainingArgs
             .map!(e => tuple(e, readText(e)))
-            .flatMap!(e => inferAttributes(e.expand, args.importPaths).byKeyValue)
+            .flatMap!infer
             .map!(e => toInferredAttributes(e.key, e.value))
             .array
             .sort!sortByLocation

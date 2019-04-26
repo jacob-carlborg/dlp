@@ -1,11 +1,10 @@
 module dlp.driver.commands.leaf_functions;
 
-import dlp.driver.command : Command;
+import dlp.driver.command : Command, StandardArguments;
 
-private struct Arguments
+private class Arguments : StandardArguments
 {
-    @("import-path|i", "Add <path> as an import path.")
-    string[] importPaths;
+
 }
 
 class LeafFunctions : Command!(Arguments)
@@ -54,9 +53,12 @@ class LeafFunctions : Command!(Arguments)
         enforce!MissingArgumentException(!remainingArgs.empty,
             "No input files were given");
 
+        alias leafs = e =>
+            leafFunctions(e.expand, args.importPaths, args.stringImportPaths)[];
+
         remainingArgs
             .map!(e => tuple(e, readText(e)))
-            .flatMap!(e => leafFunctions(e.expand, args.importPaths)[])
+            .flatMap!leafs
             .map!toLeafFunction
             .array
             .sort!sortByLine

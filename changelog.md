@@ -6,6 +6,8 @@
 
 * Add new command, `infer-attributes`, which will infer the attributes of all
 regular functions.
+* Added a flag, `--string-import-path`, which will add the given path as a
+string import path
 
 ## 0.1.0
 ### New/Changed Features

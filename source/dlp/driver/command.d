@@ -2,6 +2,15 @@ module dlp.driver.command;
 
 import dlp.core.optional : Optional;
 
+class StandardArguments
+{
+    @("import-path|i", "Add <path> as an import path.")
+    string[] importPaths;
+
+    @("string-import-path", "Add <path> as a string import path.")
+    string[] stringImportPaths;
+}
+
 abstract class BaseCommand
 {
     abstract string name() const;
@@ -28,7 +37,11 @@ abstract class Command(Arguments = void) : BaseCommand
             import std.format : format;
             import dlp.driver.cli : parseCommandLine, printHelp;
 
-            Arguments arguments;
+            static if (is(Arguments : Object))
+                auto arguments = new Arguments;
+            else
+                Arguments arguments;
+
             auto result = parseCommandLine(rawArgs, arguments);
 
             if (result.helpWanted)

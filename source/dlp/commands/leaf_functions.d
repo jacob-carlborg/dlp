@@ -10,10 +10,11 @@ import dlp.commands.utility;
 Set!FuncDeclaration leafFunctions(
     const string filename,
     const string content,
-    const string[] importPaths = []
+    const string[] importPaths = [],
+    const string[] stringImportPaths = []
 )
 {
-    return runFullFrontend(filename, content, importPaths)
+    return runFullFrontend(filename, content, importPaths, stringImportPaths)
         .leafFunctions();
 }
 

@@ -59,7 +59,8 @@ struct Attributes
 const(Attributes[FuncDeclaration]) inferAttributes(
     const string filename,
     const string content,
-    const string[] importPaths = []
+    const string[] importPaths = [],
+    const string[] stringImportPaths = []
 )
 {
     inputFilename = filename;
@@ -72,7 +73,7 @@ const(Attributes[FuncDeclaration]) inferAttributes(
     }
 
     return runParser(filename, content, importPaths)
-        .inferAttributes();
+        .inferAttributes(stringImportPaths);
 }
 
 private:
@@ -123,9 +124,12 @@ in(self !is null)
     }
 }
 
-const(Attributes[FuncDeclaration]) inferAttributes(Module module_)
+const(Attributes[FuncDeclaration]) inferAttributes(
+    Module module_,
+    const string[] stringImportPaths
+)
 {
-    import std.algorithm : map;
+    import std.algorithm : each, map;
     import std.meta : AliasSeq;
 
     import dmd.attrib : StorageClassDeclaration;
@@ -289,7 +293,7 @@ const(Attributes[FuncDeclaration]) inferAttributes(Module module_)
     scope parseTimeVisitor = new ParseTimeVisitor;
     module_.accept(parseTimeVisitor);
 
-    module_.runSemanticAnalyzer();
+    module_.runSemanticAnalyzer(stringImportPaths);
 
     scope visitor = new Visitor(parseTimeVisitor.declaredAttributes);
     module_.accept(visitor);
