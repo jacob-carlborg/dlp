@@ -56,23 +56,6 @@ bool hasErrors(const ref Global global)
     return global.errors > 0;
 }
 
-void addStringImport(const(char)[] path)
-{
-    import std.string : toStringz;
-
-    import dmd.globals : global;
-    import dmd.arraytypes : Strings;
-
-    if (global.filePath is null)
-        global.filePath = new Strings();
-
-    if (global.params.fileImppath is null)
-        global.params.fileImppath = new Strings();
-
-    global.filePath.push(path.toStringz);
-    global.params.fileImppath.push(path.toStringz);
-}
-
 Module runFullFrontend(Ast = ASTCodegen)(
     const string filename,
     const string content,
@@ -115,7 +98,7 @@ Module runSemanticAnalyzer(Module module_, const string[] stringImportPaths)
 {
     import std.algorithm : each;
 
-    import dmd.frontend : fullSemantic;
+    import dmd.frontend : addStringImport, fullSemantic;
 
     stringImportPaths.each!addStringImport;
 
