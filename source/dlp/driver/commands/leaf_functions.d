@@ -53,8 +53,12 @@ class LeafFunctions : Command!(Arguments)
         enforce!MissingArgumentException(!remainingArgs.empty,
             "No input files were given");
 
-        alias leafs = e =>
-            leafFunctions(e.expand, args.importPaths, args.stringImportPaths)[];
+        alias leafs = e => leafFunctions(
+            e.expand,
+            args.versionIdentifiers,
+            args.importPaths,
+            args.stringImportPaths
+        )[];
 
         remainingArgs
             .map!(e => tuple(e, readText(e)))

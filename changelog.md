@@ -5,9 +5,11 @@
 ### New/Changed Features
 
 * Add new command, `infer-attributes`, which will infer the attributes of all
-regular functions.
-* Added a flag, `--string-import-path`, which will add the given path as a
-string import path
+regular functions
+* Added a flag, `--string-import-path`, for all commands, which will add the
+given path as a string import path
+* Added a flag, `--version`, for all commands, which will set the given string
+as a version identifier
 
 ## 0.1.0
 ### New/Changed Features

@@ -59,6 +59,7 @@ struct Attributes
 const(Attributes[FuncDeclaration]) inferAttributes(
     const string filename,
     const string content,
+    const string[] versionIdentifiers = [],
     const string[] importPaths = [],
     const string[] stringImportPaths = []
 )
@@ -72,7 +73,7 @@ const(Attributes[FuncDeclaration]) inferAttributes(
         inputFilename = none;
     }
 
-    return runParser(filename, content, importPaths)
+    return runParser(filename, content, versionIdentifiers, importPaths)
         .inferAttributes(stringImportPaths);
 }
 

@@ -9,6 +9,9 @@ class StandardArguments
 
     @("string-import-path", "Add <path> as a string import path.")
     string[] stringImportPaths;
+
+    @("version", "Specify <version> version identifier.")
+    string[] versionIdentifiers;
 }
 
 abstract class BaseCommand

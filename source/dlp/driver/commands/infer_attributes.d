@@ -60,8 +60,11 @@ class InferAttributes : Command!(Arguments)
             "No input files were given");
 
         alias infer = e => inferAttributes(
-            e.expand, args.importPaths, args.stringImportPaths)
-            .byKeyValue;
+            e.expand,
+            args.versionIdentifiers,
+            args.importPaths,
+            args.stringImportPaths
+        ).byKeyValue;
 
         remainingArgs
             .map!(e => tuple(e, readText(e)))

@@ -59,17 +59,19 @@ bool hasErrors(const ref Global global)
 Module runFullFrontend(Ast = ASTCodegen)(
     const string filename,
     const string content,
+    const string[] versionIdentifiers,
     const string[] importPaths,
     const string[] stringImportPaths)
 {
 
-    return runParser!Ast(filename, content, importPaths)
+    return runParser!Ast(filename, content, versionIdentifiers, importPaths)
         .runSemanticAnalyzer(stringImportPaths);
 }
 
 Module runParser(Ast = ASTCodegen)(
     const string filename,
     const string content,
+    const string[] versionIdentifiers,
     const string[] importPaths)
 {
     import std.algorithm : each;
@@ -80,7 +82,7 @@ Module runParser(Ast = ASTCodegen)(
     import dmd.globals : global;
 
     global.params.mscoff = global.params.is64bit;
-    initDMD();
+    initDMD(versionIdentifiers);
 
     findImportPaths
         .chain(importPaths)
