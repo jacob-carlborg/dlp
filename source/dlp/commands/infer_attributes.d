@@ -6,6 +6,7 @@ import std.string;
 import dmd.declaration : Declaration;
 import dmd.dmodule : Module;
 import dmd.dscope : Scope;
+import dmd.frontend : deinitializeDMD;
 import dmd.func;
 import dmd.visitor : SemanticTimeTransitiveVisitor, Visitor;
 
@@ -71,6 +72,7 @@ const(Attributes[FuncDeclaration]) inferAttributes(
     {
         context.restore();
         inputFilename = none;
+        deinitializeDMD();
     }
 
     return runParser(filename, content, versionIdentifiers, importPaths)

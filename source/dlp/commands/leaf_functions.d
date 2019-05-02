@@ -2,6 +2,7 @@ module dlp.commands.leaf_functions;
 
 import dmd.func : FuncDeclaration;
 import dmd.dmodule : Module;
+import dmd.frontend : deinitializeDMD;
 import dmd.visitor : SemanticTimeTransitiveVisitor;
 
 import dlp.core.set;
@@ -15,6 +16,9 @@ Set!FuncDeclaration leafFunctions(
     const string[] stringImportPaths = []
 )
 {
+    scope (exit)
+        deinitializeDMD();
+
     return runFullFrontend(
         filename, content, versionIdentifiers, importPaths, stringImportPaths
     ).leafFunctions();
@@ -76,8 +80,10 @@ string setup()
 
         scope (exit)
         {
+            import dmd.frontend : deinitializeDMD;
             import dmd.globals : global;
-            global.params.showColumns = false;
+
+            deinitializeDMD();
         }
     };
 }
