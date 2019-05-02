@@ -8,9 +8,12 @@ if (func.length >= 1)
 
     auto flatMap(Range)(Range range) if (isInputRange!(Unqual!Range))
     {
-        import std.algorithm : map, joiner;
+        import std.algorithm : cache, map, joiner;
 
-        return range.map!func.joiner;
+        return range
+            .map!func
+            .cache
+            .joiner;
     }
 }
 
