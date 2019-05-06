@@ -66,7 +66,8 @@ const(Attributes[FuncDeclaration]) inferAttributes(
 )
 {
     inputFilename = filename;
-    auto context = redirect!(FuncDeclaration.canInferAttributes, canInferAttributes);
+    auto context = redirect!(FuncDeclaration.canInferAttributes,
+        RedirectedFuncDeclaration.canInferAttributes);
 
     scope (exit)
     {
@@ -81,49 +82,52 @@ const(Attributes[FuncDeclaration]) inferAttributes(
 
 private:
 
-bool canInferAttributes(Scope* sc, FuncDeclaration self)
-in(self !is null)
+extern (C++) class RedirectedFuncDeclaration
 {
-    if (!self.fbody)
-        return false;
-
-    assert(inputFilename.isPresent);
-    const isFromInputFile = self.loc.filename.fromStringz == inputFilename.get;
-
-    return canInferAttributesOriginal(self, sc) || isFromInputFile;
-}
-
-bool canInferAttributesOriginal(FuncDeclaration self, Scope* sc)
-in(self !is null)
-{
-    import dmd.declaration : STC;
-
-    with (self)
+    final bool canInferAttributes(Scope* sc)
     {
-        if (!fbody)
+        auto self = cast(FuncDeclaration) this;
+
+        if (!self.fbody)
             return false;
 
-        if (isVirtualMethod())
-            return false;               // since they may be overridden
+        assert(inputFilename.isPresent);
+        const isFromInputFile = self.loc.filename.fromStringz == inputFilename.get;
 
-        if (sc.func &&
-            /********** this is for backwards compatibility for the moment ********/
-            (!isMember() || sc.func.isSafeBypassingInference() && !isInstantiated()))
-            return true;
+        return canInferAttributesOriginal(self, sc) || isFromInputFile;
+    }
 
-        if (isFuncLiteralDeclaration() ||               // externs are not possible with literals
-            (storage_class & STC.inference) ||           // do attribute inference
-            (inferRetType && !isCtorDeclaration()))
-            return true;
+    final bool canInferAttributesOriginal(FuncDeclaration self, Scope* sc)
+    {
+        import dmd.declaration : STC;
 
-        if (isInstantiated())
+        with (self)
         {
-            auto ti = parent.isTemplateInstance();
-            if (ti is null || ti.isTemplateMixin() || ti.tempdecl.ident == ident)
-                return true;
-        }
+            if (!fbody)
+                return false;
 
-        return false;
+            if (isVirtualMethod())
+                return false;               // since they may be overridden
+
+            if (sc.func &&
+                /********** this is for backwards compatibility for the moment ********/
+                (!isMember() || sc.func.isSafeBypassingInference() && !isInstantiated()))
+                return true;
+
+            if (isFuncLiteralDeclaration() ||               // externs are not possible with literals
+                (storage_class & STC.inference) ||           // do attribute inference
+                (inferRetType && !isCtorDeclaration()))
+                return true;
+
+            if (isInstantiated())
+            {
+                auto ti = parent.isTemplateInstance();
+                if (ti is null || ti.isTemplateMixin() || ti.tempdecl.ident == ident)
+                    return true;
+            }
+
+            return false;
+        }
     }
 }
 

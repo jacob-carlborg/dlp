@@ -7,29 +7,12 @@ import std.traits : isCallable;
 RedirectContext redirect(alias from, alias to)()
     if (isCallable!from && isCallable!to)
 {
-    import std.array : join;
-    import std.traits : Parameters, ReturnType;
-    import std.meta : AliasSeq;
+    import std.format : format;
 
-    import dlp.core.traits : hasThisReference, ThisType;
-
-    static if (hasThisReference!from)
-    {
-        enum attributes = [__traits(getFunctionAttributes, from)].join(" ");
-        alias NewParameters = AliasSeq!(Parameters!from, ThisType!from);
-        mixin("alias NewType = ReturnType!from function(NewParameters) " ~ attributes ~ ";");
-
-        static assert(is(typeof(&to) == NewType),
-            `The target function "` ~ __traits(identifier, to) ~ `" of type "` ~
-            typeof(to).stringof ~ `" needs to be of the same type as the ` ~
-            `source function "` ~ __traits(identifier, from) ~ `" of the type "` ~
-            typeof(*NewType.init).stringof ~ `"`);
-    }
-
-    else
-        static assert(is(typeof(from) == typeof(to)),
-            `The source "` ~ typeof(from).stringof ~ `" and target "` ~
-            typeof(to).stringof ~ `" functions need to be of the same type`);
+    static assert(is(typeof(from) == typeof(to)),
+        format!(`The source "%s" and target "%s" functions need to be ` ~
+            "of the same type")(typeof(from).stringof, typeof(to).stringof)
+    );
 
     return RedirectContext(&from, rawRedirect(&from, &to));
 }
@@ -79,15 +62,19 @@ unittest
     {
         int counter;
 
-        final void increment() pure nothrow @nogc @safe
+        final void increment()
         {
             counter++;
         }
     }
 
-    static void decrement(Expression e) pure nothrow @nogc @safe
+    class RedirectedExpression
     {
-        e.counter--;
+        final void decrement()
+        {
+            auto self = cast(Expression) this;
+            self.counter--;
+        }
     }
 
     scope exp = new Expression;
@@ -95,7 +82,7 @@ unittest
     exp.increment();
     assert(exp.counter == 1);
 
-    auto context = redirect!(Expression.increment, decrement);
+    auto context = redirect!(Expression.increment, RedirectedExpression.decrement);
 
     exp.increment();
     assert(exp.counter == 0);
