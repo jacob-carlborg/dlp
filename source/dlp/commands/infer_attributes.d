@@ -776,53 +776,6 @@ void suppressedVerrorPrint(const ref Loc, Color, const(char)*, const(char)*,
     assert(inferAttributesEqualsAttributes(content, expected));
 }
 
-@test("class allocator") unittest
-{
-    mixin(setup);
-    mixin(suppressDiagnostics);
-
-    enum Attributes expected = {
-        isNogc: true,
-        isNothrow: true,
-        isPure: true,
-        isSafe: true
-    };
-
-    enum content = q{
-        class Foo
-        {
-            new(size_t)
-            {
-                return null;
-            }
-        }
-    };
-
-    assert(inferAttributesEqualsAttributes(content, expected));
-}
-
-@test("class deallocators") unittest
-{
-    mixin(setup);
-    mixin(suppressDiagnostics);
-
-    enum Attributes expected = {
-        isNogc: true,
-        isNothrow: true,
-        isPure: true,
-        isSafe: true
-    };
-
-    enum content = q{
-        class Foo
-        {
-            delete(void*) {}
-        }
-    };
-
-    assert(inferAttributesEqualsAttributes(content, expected));
-}
-
 @test("static constructor") unittest
 {
     mixin(setup);
