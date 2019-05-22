@@ -6,6 +6,9 @@ import dlp.driver.command : Command, StandardArguments;
 struct Arguments
 {
     mixin StandardArguments;
+
+    @("include-virtual-methods", "Infer attributes for virtual methods [default].")
+    bool includeVirtualMethods = Config.init.includeVirtualMethods;
 }
 
 class InferAttributes : Command!(Arguments)

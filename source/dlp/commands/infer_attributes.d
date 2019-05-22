@@ -15,11 +15,14 @@ import dlp.core.optional;
 import dlp.core.redirect;
 import dlp.core.set;
 
-Optional!string inputFilename;
+private Optional!string inputFilename;
+private Config config;
 
-const struct Config
+struct Config
 {
     mixin StandardConfig;
+
+    bool includeVirtualMethods;
 }
 
 struct Attributes
@@ -65,9 +68,10 @@ struct Attributes
 const(Attributes[FuncDeclaration]) inferAttributes(
     const string filename,
     const string content,
-    const Config config = Config()
+    /*const*/ Config config = Config()
 )
 {
+    .config = config;
     inputFilename = filename;
     auto context = redirect!(FuncDeclaration.canInferAttributes,
         RedirectedFuncDeclaration.canInferAttributes);
@@ -97,7 +101,16 @@ extern (C++) class RedirectedFuncDeclaration
         assert(inputFilename.isPresent);
         const isFromInputFile = self.loc.filename.fromStringz == inputFilename.get;
 
-        return canInferAttributesOriginal(self, sc) || isFromInputFile;
+        const originalResult = canInferAttributesOriginal(self, sc);
+
+        if (originalResult)
+            return true;
+
+        // return isFromInputFile;
+        return isFromInputFile && (
+            !self.isVirtualMethod ||
+            (self.isVirtualMethod && config.includeVirtualMethods)
+        );
     }
 
     final bool canInferAttributesOriginal(FuncDeclaration self, Scope* sc)
@@ -699,6 +712,53 @@ void suppressedVerrorPrint(const ref Loc, Color, const(char)*, const(char)*,
     assert(inferAttributesEqualsAttributes(content, expected));
 }
 
+@test("virtual method") unittest
+{
+    mixin(setup);
+
+    enum content = q{
+        class Foo
+        {
+            int a;
+            void bar()
+            {
+                a = 3;
+            }
+        }
+    };
+
+    assert(inferAttributes("test.d", content).length == 0);
+}
+
+@test("virtual method - with includeVirtualMethods enabled in the config") unittest
+{
+    mixin(setup);
+
+    enum Attributes expected = {
+        isNogc: true,
+        isNothrow: true,
+        isPure: true,
+        isSafe: true
+    };
+
+    enum content = q{
+        class Foo
+        {
+            int a;
+            void bar()
+            {
+                a = 3;
+            }
+        }
+    };
+
+    Config config = {
+        includeVirtualMethods: true
+    };
+
+    assert(inferAttributesEqualsAttributes(content, expected, config));
+}
+
 @test("postblit") unittest
 {
     mixin(setup);
@@ -852,12 +912,12 @@ void suppressedVerrorPrint(const ref Loc, Color, const(char)*, const(char)*,
 }
 
 bool inferAttributesEqualsAttributes(
-    const string content, const Attributes attributes
+    const string content, const Attributes attributes, Config config = Config()
 )
 {
     import std.algorithm : find;
 
-    auto inferredAttributes = inferAttributes("test.d", content);
+    auto inferredAttributes = inferAttributes("test.d", content, config);
     assert(inferredAttributes.length > 0);
 
     return inferredAttributes.byValue.front == attributes;

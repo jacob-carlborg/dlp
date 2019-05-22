@@ -39,7 +39,8 @@ test.d:1:6: test.d.main
 Prints the inferred attributes of all functions that are normally not inferred
 by the compiler. These are regular functions and methods. Templates, nested
 functions and lambdas are inferred by the compiler and will not be included by
-this command
+this command. By default virtual methods are not inferred. There's a flag to
+enable inferring of virtual methods.
 
 #### Usage
 
