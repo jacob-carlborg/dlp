@@ -1,10 +1,11 @@
 module dlp.driver.commands.infer_attributes;
 
+import dlp.commands.infer_attributes : Config;
 import dlp.driver.command : Command, StandardArguments;
 
-private class Arguments : StandardArguments
+struct Arguments
 {
-
+    mixin StandardArguments;
 }
 
 class InferAttributes : Command!(Arguments)
@@ -61,9 +62,7 @@ class InferAttributes : Command!(Arguments)
 
         alias infer = e => inferAttributes(
             e.expand,
-            args.versionIdentifiers,
-            args.importPaths,
-            args.stringImportPaths
+            args.toConfig
         ).byKeyValue;
 
         remainingArgs
@@ -90,6 +89,17 @@ class InferAttributes : Command!(Arguments)
 
         writeln(inferredAttributes);
     }
+}
+
+Config toConfig(ref Arguments args)
+{
+    Config config = {
+        versionIdentifiers: args.versionIdentifiers,
+        importPaths: args.importPaths,
+        stringImportPaths: args.stringImportPaths
+    };
+
+    return config;
 }
 
 private struct InferredAttributes

@@ -1,10 +1,11 @@
 module dlp.driver.commands.leaf_functions;
 
+import dlp.commands.leaf_functions : Config;
 import dlp.driver.command : Command, StandardArguments;
 
-private class Arguments : StandardArguments
+struct Arguments
 {
-
+    mixin StandardArguments;
 }
 
 class LeafFunctions : Command!(Arguments)
@@ -53,16 +54,9 @@ class LeafFunctions : Command!(Arguments)
         enforce!MissingArgumentException(!remainingArgs.empty,
             "No input files were given");
 
-        alias leafs = e => leafFunctions(
-            e.expand,
-            args.versionIdentifiers,
-            args.importPaths,
-            args.stringImportPaths
-        )[];
-
         remainingArgs
             .map!(e => tuple(e, readText(e)))
-            .flatMap!leafs
+            .flatMap!(e => leafFunctions(e.expand, args.toConfig)[])
             .map!toLeafFunction
             .array
             .sort!sortByLine
@@ -83,6 +77,17 @@ class LeafFunctions : Command!(Arguments)
 
         writeln(leafFunction);
     }
+}
+
+Config toConfig(ref Arguments args)
+{
+    Config config = {
+        versionIdentifiers: args.versionIdentifiers,
+        importPaths: args.importPaths,
+        stringImportPaths: args.stringImportPaths
+    };
+
+    return config;
 }
 
 private struct LeafFunction

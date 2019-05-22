@@ -8,20 +8,24 @@ import dmd.visitor : SemanticTimeTransitiveVisitor;
 import dlp.core.set;
 import dlp.commands.utility;
 
+const struct Config
+{
+    mixin StandardConfig;
+}
+
 Set!FuncDeclaration leafFunctions(
     const string filename,
     const string content,
-    const string[] versionIdentifiers = [],
-    const string[] importPaths = [],
-    const string[] stringImportPaths = []
+    const Config config = Config()
 )
 {
     scope (exit)
         deinitializeDMD();
 
-    return runFullFrontend(
-        filename, content, versionIdentifiers, importPaths, stringImportPaths
-    ).leafFunctions();
+    with (config)
+        return runFullFrontend(
+            filename, content, versionIdentifiers, importPaths, stringImportPaths
+        ).leafFunctions();
 }
 
 private:

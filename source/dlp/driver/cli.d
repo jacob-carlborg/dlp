@@ -123,6 +123,8 @@ template makeGetOptArgs(alias arguments)
 
                 string suffix;
 
+                enum arguments = typeof(arguments).init;
+
                 static if (is(typeof(member) == bool) || is(typeof(member) == enum))
                 {
                     auto default_ = "[default]";
