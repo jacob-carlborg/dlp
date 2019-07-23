@@ -25,6 +25,7 @@ class Application
 
     private
     {
+        bool verbose;
         string[] args;
         BaseCommand[string] commands;
     }
@@ -53,6 +54,9 @@ private:
         @("version|V", "Print the version of DLP and exit.")
         bool version_;
 
+        @("verbose|v", "Print verbose output.")
+        bool verbose;
+
         @("frontend-version", "Print the version of the frontend DLP is using")
         bool frontendVersion;
 
@@ -70,10 +74,13 @@ private:
 
     int run()
     {
-        import std.stdio : stderr;
+        import std.algorithm : canFind;
         import std.array : empty;
+        import std.stdio : stderr;
 
         import dlp.commands.utility : DiagnosticsException;
+
+        verbose = args.canFind("--verbose") || args.canFind("-v");
 
         try
             return runImplementation() ? 0 : 1;
@@ -82,7 +89,7 @@ private:
             // For DiagnosticsException the errors have already been printed
         }
         catch (Throwable t)
-            stderr.writeln(t.message);
+            stderr.writeln(verbose ? t.toString : t.message);
 
         return 1;
     }
@@ -92,7 +99,7 @@ private:
         import dlp.driver.commands.leaf_functions : LeafFunctions;
 
         registerCommands();
-        auto arguments = parseCli();
+        auto arguments = parseCli();writeln(arguments.version_);
         const result = handleArguments(arguments);
 
         if (result == ExitStatus.fail)
@@ -135,8 +142,13 @@ private:
 
         static Arguments parseGlobalCLi(string[] args)
         {
+            enum CommandLineParsingConfig config = {
+                passThrough: true,
+                stopOnFirstNonOption: true
+            };
+
             Arguments arguments;
-            auto result = parseCommandLine(args, arguments);
+            auto result = parseCommandLine!config(args, arguments);
 
             arguments.getoptResult = result;
             arguments.remainingArgs = args;
@@ -164,12 +176,8 @@ private:
             return tuple(some(args.front), rawArgs[0] ~ args[1 .. $]);
         }
 
-        auto t = parseCommand(args);
-
-        if (t[0].isPresent)
-            return Arguments(t[0], t[1]);
-
-        auto arguments = parseGlobalCLi(t[1]);
+        auto arguments = parseGlobalCLi(args);
+        auto t = parseCommand(arguments.remainingArgs);
         arguments.command = t[0];
         arguments.remainingArgs = t[1];
 

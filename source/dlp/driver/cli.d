@@ -4,6 +4,19 @@ import std.getopt : GetoptResult;
 
 import dlp.core.optional;
 
+/// Configuration for `parseCommandLine`.
+struct CommandLineParsingConfig
+{
+    /// If `true`, pass unrecognized arguments through.
+    bool passThrough = false;
+
+    /// If `true`, options are case sensitive.
+    bool caseSensitive = true;
+
+    /// If `true`, stop at first argument that does not look like an option.
+    bool stopOnFirstNonOption = false;
+}
+
 /**
  * Processes command-line arguments
  *
@@ -13,11 +26,32 @@ import dlp.core.optional;
  *
  *  Returns: getopt parse result
  */
-GetoptResult parseCommandLine(Arguments)(ref string[] rawArgs, ref Arguments arguments)
+GetoptResult parseCommandLine(
+    CommandLineParsingConfig config = CommandLineParsingConfig(), Arguments
+)(ref string[] rawArgs, ref Arguments arguments)
 {
-    import std.getopt : getopt;
+    import std.getopt : getopt, GetoptConfig = config;
+    import std.meta : aliasSeqOf;
 
-    return getopt(rawArgs, makeGetOptArgs!arguments);
+    static auto toGetoptConfig(CommandLineParsingConfig config)
+    {
+        GetoptConfig[] result;
+
+        if (config.passThrough)
+            result ~= GetoptConfig.passThrough;
+
+        if (config.caseSensitive)
+            result ~= GetoptConfig.caseSensitive;
+
+        if (config.stopOnFirstNonOption)
+            result ~= GetoptConfig.stopOnFirstNonOption;
+
+        return result;
+    }
+
+    enum getoptConfig = toGetoptConfig(config);
+
+    return getopt(rawArgs, aliasSeqOf!getoptConfig, makeGetOptArgs!arguments);
 }
 
 void printHelp(Arguments)(

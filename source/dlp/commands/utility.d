@@ -91,9 +91,14 @@ Module runParser(Ast = ASTCodegen)(
     global.params.mscoff = global.params.is64bit;
     initDMD(versionIdentifiers);
 
-    findImportPaths
-        .chain(importPaths)
-        .each!addImport;
+    [
+        "/Users/doob/.dvm/compilers/dmd-2.086.0/src/druntime/import",
+        "/Users/doob/.dvm/compilers/dmd-2.086.0/src/phobos"
+    ].chain(importPaths).each!addImport;
+
+    // findImportPaths
+    //     .chain(importPaths)
+    //     .each!addImport;
 
     auto t = parseModule!Ast(filename, content);
 
