@@ -14,6 +14,8 @@ os:
 env:
   global: MACOSX_DEPLOYMENT_TARGET=10.9
 
+script: dub test --compiler=${DC} --DRT-gcopt=parallel:0
+
 matrix:
   include:
     # beta and nightly builds for DMD and LDC
