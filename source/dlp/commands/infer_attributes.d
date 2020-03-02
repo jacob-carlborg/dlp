@@ -227,8 +227,6 @@ const(Attributes[FuncDeclaration]) inferAttributes(
         }
 
         private alias functionSubclasses = AliasSeq!(
-            NewDeclaration,
-            DeleteDeclaration,
             StaticCtorDeclaration,
             StaticDtorDeclaration,
             PostBlitDeclaration,
@@ -279,8 +277,6 @@ const(Attributes[FuncDeclaration]) inferAttributes(
         }
 
         private alias functionSubclasses = AliasSeq!(
-            NewDeclaration,
-            DeleteDeclaration,
             StaticCtorDeclaration,
             StaticDtorDeclaration,
             PostBlitDeclaration,
@@ -339,7 +335,7 @@ enum suppressDiagnostics = q{
 };
 
 void suppressedVerrorPrint(const ref Loc, Color, const(char)*, const(char)*,
-    va_list, const(char)* = null, const(char)* = null)
+    va_list, const(char)* = null, const(char)* = null) nothrow
 {
     // noop
 }
@@ -770,53 +766,6 @@ void suppressedVerrorPrint(const ref Loc, Color, const(char)*, const(char)*,
         struct Foo
         {
             ~this() {}
-        }
-    };
-
-    assert(inferAttributesEqualsAttributes(content, expected));
-}
-
-@test("class allocator") unittest
-{
-    mixin(setup);
-    mixin(suppressDiagnostics);
-
-    enum Attributes expected = {
-        isNogc: true,
-        isNothrow: true,
-        isPure: true,
-        isSafe: true
-    };
-
-    enum content = q{
-        class Foo
-        {
-            new(size_t)
-            {
-                return null;
-            }
-        }
-    };
-
-    assert(inferAttributesEqualsAttributes(content, expected));
-}
-
-@test("class deallocators") unittest
-{
-    mixin(setup);
-    mixin(suppressDiagnostics);
-
-    enum Attributes expected = {
-        isNogc: true,
-        isNothrow: true,
-        isPure: true,
-        isSafe: true
-    };
-
-    enum content = q{
-        class Foo
-        {
-            delete(void*) {}
         }
     };
 

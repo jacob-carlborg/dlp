@@ -32,7 +32,7 @@ string fullyQualifiedName(Dsymbol symbol)
         buf.prependstring(package_.ident.toChars());
     }
 
-    return buf.peekSlice.idup;
+    return buf.extractSlice();
 }
 
 void handleDiagnosticErrors()
@@ -82,7 +82,7 @@ Module runParser(Ast = ASTCodegen)(
     import dmd.globals : global;
 
     global.params.mscoff = global.params.is64bit;
-    initDMD(versionIdentifiers);
+    initDMD(null, versionIdentifiers);
 
     findImportPaths
         .chain(importPaths)
