@@ -1,8 +1,6 @@
 {
 	"fileVersion": 1,
 	"versions": {
-		"dmd": {
-			"path": "vendor/dmd"
-		}
+		"ddc": "0.0.1"
 	}
 }
