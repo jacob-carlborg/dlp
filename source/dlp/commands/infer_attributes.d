@@ -8,6 +8,7 @@ import dmd.dmodule : Module;
 import dmd.dscope : Scope;
 import dmd.frontend : deinitializeDMD;
 import dmd.func;
+import dmd.parsetimevisitor : ParseTimeVisitor;
 import dmd.visitor : SemanticTimeTransitiveVisitor, Visitor;
 
 import dlp.commands.utility;
@@ -65,74 +66,18 @@ const(Attributes[FuncDeclaration]) inferAttributes(
     const string[] stringImportPaths = []
 )
 {
-    inputFilename = filename;
-    auto context = redirect!(FuncDeclaration.canInferAttributes,
-        RedirectedFuncDeclaration.canInferAttributes);
-
     scope (exit)
-    {
-        context.restore();
-        inputFilename = none;
         deinitializeDMD();
-    }
 
     return runParser(filename, content, versionIdentifiers, importPaths)
-        .inferAttributes(stringImportPaths);
+        .inferAttributes(filename, stringImportPaths);
 }
 
 private:
 
-extern (C++) class RedirectedFuncDeclaration
-{
-    final bool canInferAttributes(Scope* sc)
-    {
-        auto self = cast(FuncDeclaration) this;
-
-        if (!self.fbody)
-            return false;
-
-        assert(inputFilename.isPresent);
-        const isFromInputFile = self.loc.filename.fromStringz == inputFilename.get;
-
-        return canInferAttributesOriginal(self, sc) || isFromInputFile;
-    }
-
-    final bool canInferAttributesOriginal(FuncDeclaration self, Scope* sc)
-    {
-        import dmd.declaration : STC;
-
-        with (self)
-        {
-            if (!fbody)
-                return false;
-
-            if (isVirtualMethod())
-                return false;               // since they may be overridden
-
-            if (sc.func &&
-                /********** this is for backwards compatibility for the moment ********/
-                (!isMember() || sc.func.isSafeBypassingInference() && !isInstantiated()))
-                return true;
-
-            if (isFuncLiteralDeclaration() ||               // externs are not possible with literals
-                (storage_class & STC.inference) ||           // do attribute inference
-                (inferRetType && !isCtorDeclaration()))
-                return true;
-
-            if (isInstantiated())
-            {
-                auto ti = parent.isTemplateInstance();
-                if (ti is null || ti.isTemplateMixin() || ti.tempdecl.ident == ident)
-                    return true;
-            }
-
-            return false;
-        }
-    }
-}
-
 const(Attributes[FuncDeclaration]) inferAttributes(
     Module module_,
+    const string inputFilename,
     const string[] stringImportPaths
 )
 {
@@ -205,11 +150,50 @@ const(Attributes[FuncDeclaration]) inferAttributes(
     {
         alias visit = typeof(super).visit;
 
+        const string inputFilename;
         DeclaredAttributes declaredAttributes;
         StorageClassDeclaration[] storageClassDeclarations;
 
+        extern (D) this(const string inputFilename)
+        {
+            this.inputFilename = inputFilename;
+        }
+
         override void visit(FuncDeclaration func)
         {
+            func.canInferAttributesOverride = (sc) {
+                // implementation of `canInferAttributes` copied here.
+                with (func)
+                {
+                    if (!fbody)
+                        return false;
+
+                    if (isVirtualMethod())
+                        return false;               // since they may be overridden
+
+                    if (sc.func &&
+                        /********** this is for backwards compatibility for the moment ********/
+                        (!isMember() || sc.func.isSafeBypassingInference() && !isInstantiated()))
+                        return true;
+
+                    if (isFuncLiteralDeclaration() ||               // externs are not possible with literals
+                        (storage_class & STC.inference) ||           // do attribute inference
+                        (inferRetType && !isCtorDeclaration()))
+                        return true;
+
+                    if (isInstantiated())
+                    {
+                        auto ti = parent.isTemplateInstance();
+                        if (ti is null || ti.isTemplateMixin() || ti.tempdecl.ident == ident)
+                            return true;
+                    }
+
+                    // this is custom, not part of the original implementation
+                    // of `canInferAttributes`
+                    return loc.filename.fromStringz == inputFilename;
+                }
+            };
+
             declaredAttributes[cast(void*) func] =
                 extractAttributes(func, storageClassDeclarations);
         }
@@ -226,7 +210,7 @@ const(Attributes[FuncDeclaration]) inferAttributes(
             super.visit(scd);
         }
 
-        private alias functionSubclasses = AliasSeq!(
+        alias functionSubclasses = AliasSeq!(
             StaticCtorDeclaration,
             StaticDtorDeclaration,
             PostBlitDeclaration,
@@ -276,7 +260,7 @@ const(Attributes[FuncDeclaration]) inferAttributes(
                 this.inferredAttributes[cast(void*) func] = normalizedAttributes;
         }
 
-        private alias functionSubclasses = AliasSeq!(
+        alias functionSubclasses = AliasSeq!(
             StaticCtorDeclaration,
             StaticDtorDeclaration,
             PostBlitDeclaration,
@@ -293,7 +277,7 @@ const(Attributes[FuncDeclaration]) inferAttributes(
         }
     }
 
-    scope parseTimeVisitor = new ParseTimeVisitor;
+    scope parseTimeVisitor = new ParseTimeVisitor(inputFilename);
     module_.accept(parseTimeVisitor);
 
     module_.runSemanticAnalyzer(stringImportPaths);
@@ -324,21 +308,6 @@ enum setup = q{
         deinitializeDMD();
     }
 };
-
-enum suppressDiagnostics = q{
-    auto context = redirect!(
-        __traits(getMember, dmd.errors, "verrorPrint"),
-        suppressedVerrorPrint
-    );
-    scope (exit)
-        context.restore();
-};
-
-void suppressedVerrorPrint(const ref Loc, Color, const(char)*, const(char)*,
-    va_list, const(char)* = null, const(char)* = null) nothrow
-{
-    // noop
-}
 
 @test("base case, empty function") unittest
 {
