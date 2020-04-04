@@ -91,6 +91,13 @@ const(Attributes[FuncDeclaration]) inferAttributes(
 
     alias DeclaredAttributes = Attributes[void*];
 
+    alias functionSubclasses = AliasSeq!(
+        StaticCtorDeclaration,
+        StaticDtorDeclaration,
+        PostBlitDeclaration,
+        DtorDeclaration
+    );
+
     static const(Attributes) extractAttributes(
         FuncDeclaration func, StorageClassDeclaration[] storageClassDeclarations
     )
@@ -210,13 +217,6 @@ const(Attributes[FuncDeclaration]) inferAttributes(
             super.visit(scd);
         }
 
-        alias functionSubclasses = AliasSeq!(
-            StaticCtorDeclaration,
-            StaticDtorDeclaration,
-            PostBlitDeclaration,
-            DtorDeclaration
-        );
-
         static foreach (subclass; functionSubclasses)
         {
             // not sure why this is needed
@@ -259,13 +259,6 @@ const(Attributes[FuncDeclaration]) inferAttributes(
             if (normalizedAttributes.inferred)
                 this.inferredAttributes[cast(void*) func] = normalizedAttributes;
         }
-
-        alias functionSubclasses = AliasSeq!(
-            StaticCtorDeclaration,
-            StaticDtorDeclaration,
-            PostBlitDeclaration,
-            DtorDeclaration
-        );
 
         static foreach (subclass; functionSubclasses)
         {
