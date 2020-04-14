@@ -28,70 +28,70 @@ struct RedirectContext
     }
 }
 
-unittest
-{
-    static int counter;
-
-    static void increment()
-    {
-        counter++;
-    }
-
-    static void decrement()
-    {
-        counter--;
-    }
-
-    increment();
-    assert(counter == 1);
-
-    auto context = redirect!(increment, decrement);
-
-    increment();
-    assert(counter == 0);
-
-    context.restore();
-
-    increment();
-    assert(counter == 1);
-}
-
-unittest
-{
-    class Expression
-    {
-        int counter;
-
-        final void increment()
-        {
-            counter++;
-        }
-    }
-
-    class RedirectedExpression
-    {
-        final void decrement()
-        {
-            auto self = cast(Expression) this;
-            self.counter--;
-        }
-    }
-
-    scope exp = new Expression;
-
-    exp.increment();
-    assert(exp.counter == 1);
-
-    auto context = redirect!(Expression.increment, RedirectedExpression.decrement);
-
-    exp.increment();
-    assert(exp.counter == 0);
-
-    context.restore();
-
-    exp.increment();
-    assert(exp.counter == 1);
-}
+// unittest
+// {
+//     static int counter;
+//
+//     static void increment()
+//     {
+//         counter++;
+//     }
+//
+//     static void decrement()
+//     {
+//         counter--;
+//     }
+//
+//     increment();
+//     assert(counter == 1);
+//
+//     auto context = redirect!(increment, decrement);
+//
+//     increment();
+//     assert(counter == 0);
+//
+//     context.restore();
+//
+//     increment();
+//     assert(counter == 1);
+// }
+//
+// unittest
+// {
+//     class Expression
+//     {
+//         int counter;
+//
+//         final void increment()
+//         {
+//             counter++;
+//         }
+//     }
+//
+//     class RedirectedExpression
+//     {
+//         final void decrement()
+//         {
+//             auto self = cast(Expression) this;
+//             self.counter--;
+//         }
+//     }
+//
+//     scope exp = new Expression;
+//
+//     exp.increment();
+//     assert(exp.counter == 1);
+//
+//     auto context = redirect!(Expression.increment, RedirectedExpression.decrement);
+//
+//     exp.increment();
+//     assert(exp.counter == 0);
+//
+//     context.restore();
+//
+//     exp.increment();
+//     assert(exp.counter == 1);
+// }
 
 private:
 
