@@ -1,3 +1,0 @@
-[submodule "vendor/dmd"]
-	path = vendor/dmd
-	url = https://github.com/dlang/dmd
