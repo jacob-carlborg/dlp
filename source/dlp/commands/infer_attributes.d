@@ -168,37 +168,12 @@ const(Attributes[FuncDeclaration]) inferAttributes(
 
         override void visit(FuncDeclaration func)
         {
-            func.canInferAttributesOverride = (sc) {
-                // implementation of `canInferAttributes` copied here.
-                with (func)
-                {
-                    if (!fbody)
-                        return false;
+            func.canInferAttributesOverride = (func, sc, defaultCanInferAttributes) {
+                if (!func.fbody)
+                    return false;
 
-                    if (isVirtualMethod())
-                        return false;               // since they may be overridden
-
-                    if (sc.func &&
-                        /********** this is for backwards compatibility for the moment ********/
-                        (!isMember() || sc.func.isSafeBypassingInference() && !isInstantiated()))
-                        return true;
-
-                    if (isFuncLiteralDeclaration() ||               // externs are not possible with literals
-                        (storage_class & STC.inference) ||           // do attribute inference
-                        (inferRetType && !isCtorDeclaration()))
-                        return true;
-
-                    if (isInstantiated())
-                    {
-                        auto ti = parent.isTemplateInstance();
-                        if (ti is null || ti.isTemplateMixin() || ti.tempdecl.ident == ident)
-                            return true;
-                    }
-
-                    // this is custom, not part of the original implementation
-                    // of `canInferAttributes`
-                    return loc.filename.fromStringz == inputFilename;
-                }
+                return defaultCanInferAttributes(sc) ||
+                    func.loc.filename.fromStringz == inputFilename;
             };
 
             declaredAttributes[cast(void*) func] =
