@@ -13,22 +13,22 @@ class LeafFunctions : Command!(Arguments)
 
     import dlp.core.optional : Optional, some;
 
-    override string name() const
+    override string name() const pure nothrow @nogc @safe
     {
         return "leaf-functions";
     }
 
-    override string shortHelp() const
+    override string shortHelp() const pure nothrow @nogc @safe
     {
         return "Prints all leaf functions.";
     }
 
-    override string usageHeader() const
+    override string usageHeader() const pure nothrow @nogc @safe
     {
         return "[options] <input>";
     }
 
-    override Optional!string longHelp() const
+    override Optional!string longHelp() const pure nothrow @nogc @safe
     {
         return some("Prints all leaf functions to standard out. A leaf function " ~
             "is a function that doesn't call any other functions, or doesn't " ~
@@ -70,7 +70,7 @@ class LeafFunctions : Command!(Arguments)
             .each!printResult;
     }
 
-    static LeafFunction toLeafFunction(FuncDeclaration func)
+    static LeafFunction toLeafFunction(FuncDeclaration func) nothrow
     {
         import dlp.commands.utility : fullyQualifiedName;
 

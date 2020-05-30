@@ -278,7 +278,7 @@ unittest
     assert(some(b).isPresent);
 }
 
-None none()
+None none() pure nothrow @nogc @safe
 {
     return None();
 }

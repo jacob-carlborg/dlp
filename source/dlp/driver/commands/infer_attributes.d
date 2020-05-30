@@ -14,22 +14,22 @@ class InferAttributes : Command!(Arguments)
     import dlp.core.optional : Optional, some;
     import dlp.commands.infer_attributes : Attributes;
 
-    override string name() const
+    override string name() const pure nothrow @nogc @safe
     {
         return "infer-attributes";
     }
 
-    override string shortHelp() const
+    override string shortHelp() const pure nothrow @nogc @safe
     {
         return "Prints the inferred attributes all functions";
     }
 
-    override string usageHeader() const
+    override string usageHeader() const pure nothrow @nogc @safe
     {
         return "[options] <input>";
     }
 
-    override Optional!string longHelp() const
+    override Optional!string longHelp() const pure nothrow @nogc @safe
     {
         return some("Prints the inferred attributes of all non-templated " ~
             "functions. That is, the attributes that can be applied to the " ~
@@ -77,7 +77,7 @@ class InferAttributes : Command!(Arguments)
 
     static InferredAttributes toInferredAttributes(
         FuncDeclaration func, Attributes attributes
-    )
+    ) nothrow
     {
         import dlp.commands.utility : fullyQualifiedName;
 

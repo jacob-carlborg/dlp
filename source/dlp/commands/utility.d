@@ -21,7 +21,7 @@ class DiagnosticsException : Exception
     }
 }
 
-string fullyQualifiedName(Dsymbol symbol)
+string fullyQualifiedName(Dsymbol symbol) pure nothrow
 {
     OutBuffer buf;
     buf.writestring(symbol.ident.toString());
@@ -51,7 +51,7 @@ void handleDiagnosticErrors()
     throw new DiagnosticsException(diagnostics);
 }
 
-bool hasErrors(const ref Global global)
+bool hasErrors(const ref Global global) nothrow @nogc
 {
     return global.errors > 0;
 }

@@ -31,7 +31,7 @@ struct Attributes
         return this != Attributes.init;
     }
 
-    string toString() const pure
+    string toString() const pure nothrow @safe
     {
         import std.array : join;
         import std.format : format;

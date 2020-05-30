@@ -34,7 +34,7 @@ class Application
         return new Application(args).run();
     }
 
-    this(string[] args)
+    this(string[] args) pure nothrow
     in
     {
         assert(!args.empty);
@@ -61,7 +61,7 @@ private:
         string[] remainingArgs;
         GetoptResult getoptResult;
 
-        this(Optional!string command, string[] remainingArgs)
+        this(Optional!string command, string[] remainingArgs) pure nothrow @nogc
         {
             this.command = command;
             this.remainingArgs = remainingArgs;
@@ -114,7 +114,7 @@ private:
             throw new CliException(format!`Unrecognized command "%s"`(command));
     }
 
-    void registerCommands()
+    void registerCommands() pure nothrow
     {
         import dlp.driver.commands.infer_attributes : InferAttributes;
         import dlp.driver.commands.leaf_functions : LeafFunctions;
@@ -123,7 +123,7 @@ private:
         registerCommand!LeafFunctions;
     }
 
-    void registerCommand(Command)()
+    void registerCommand(Command)() pure nothrow
     {
         auto command = new Command();
         commands[command.name] = command;
