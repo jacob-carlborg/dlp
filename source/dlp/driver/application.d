@@ -223,7 +223,7 @@ private:
         global._init();
         scope(exit) global.deinitialize();
 
-        writeln(global._version);
+        writeln(global.versionString);
     }
 
     void printHelp(const ref Arguments arguments)
