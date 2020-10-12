@@ -4,7 +4,18 @@ import dlp.driver.command : Command, StandardArguments;
 
 private class Arguments : StandardArguments
 {
+    import dlp.commands.infer_attributes : Config;
 
+    private Config toConfig() const pure nothrow @nogc @safe
+    {
+        Config config = {
+            importPaths: importPaths,
+            stringImportPaths: stringImportPaths,
+            versionIdentifiers: versionIdentifiers,
+        };
+
+        return config;
+    }
 }
 
 class InferAttributes : Command!(Arguments)
@@ -59,16 +70,9 @@ class InferAttributes : Command!(Arguments)
         enforce!MissingArgumentException(!remainingArgs.empty,
             "No input files were given");
 
-        alias infer = e => inferAttributes(
-            e.expand,
-            args.versionIdentifiers,
-            args.importPaths,
-            args.stringImportPaths
-        ).byKeyValue;
-
         remainingArgs
             .map!(e => tuple(e, readText(e)))
-            .flatMap!infer
+            .flatMap!(e => inferAttributes(e.expand, args.toConfig).byKeyValue)
             .map!(e => toInferredAttributes(e.key, e.value))
             .array
             .sort!sortByLocation

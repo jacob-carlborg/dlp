@@ -18,6 +18,11 @@ import dlp.core.set;
 
 Optional!string inputFilename;
 
+const struct Config
+{
+    mixin StandardConfig;
+}
+
 struct Attributes
 {
     bool isNogc;
@@ -61,16 +66,15 @@ struct Attributes
 const(Attributes[FuncDeclaration]) inferAttributes(
     const string filename,
     const string content,
-    const string[] versionIdentifiers = [],
-    const string[] importPaths = [],
-    const string[] stringImportPaths = []
+    Config config = Config()
 )
 {
     scope (exit)
         deinitializeDMD();
 
-    return runParser(filename, content, versionIdentifiers, importPaths)
-        .inferAttributes(filename, stringImportPaths);
+    with (config)
+        return runParser(filename, content, versionIdentifiers, importPaths)
+            .inferAttributes(filename, stringImportPaths);
 }
 
 private:

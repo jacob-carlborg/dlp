@@ -4,7 +4,18 @@ import dlp.driver.command : Command, StandardArguments;
 
 private class Arguments : StandardArguments
 {
+    import dlp.commands.leaf_functions : Config;
 
+    private Config toConfig() const pure nothrow @nogc @safe
+    {
+        Config config = {
+            importPaths: importPaths,
+            stringImportPaths: stringImportPaths,
+            versionIdentifiers: versionIdentifiers,
+        };
+
+        return config;
+    }
 }
 
 class LeafFunctions : Command!(Arguments)
@@ -53,16 +64,9 @@ class LeafFunctions : Command!(Arguments)
         enforce!MissingArgumentException(!remainingArgs.empty,
             "No input files were given");
 
-        alias leafs = e => leafFunctions(
-            e.expand,
-            args.versionIdentifiers,
-            args.importPaths,
-            args.stringImportPaths
-        )[];
-
         remainingArgs
             .map!(e => tuple(e, readText(e)))
-            .flatMap!leafs
+            .flatMap!(e => leafFunctions(e.expand, args.toConfig)[])
             .map!toLeafFunction
             .array
             .sort!sortByLine

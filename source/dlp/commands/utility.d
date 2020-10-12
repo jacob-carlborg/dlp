@@ -6,6 +6,13 @@ import dmd.dsymbol : Dsymbol;
 import dmd.globals : Global;
 import dmd.root.outbuffer : OutBuffer;
 
+mixin template StandardConfig()
+{
+    string[] importPaths = [];
+    string[] stringImportPaths = [];
+    string[] versionIdentifiers = [];
+}
+
 class DiagnosticsException : Exception
 {
     import dmd.frontend : Diagnostics;
