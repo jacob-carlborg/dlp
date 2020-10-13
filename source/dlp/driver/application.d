@@ -263,7 +263,6 @@ BANNER".format(version_).strip;
 
         .printHelp(
             helpBanner,
-            arguments,
             arguments.getoptResult,
             some("\n\nCommands:\n" ~ generateCommandsHelp)
         );

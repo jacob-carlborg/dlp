@@ -20,9 +20,8 @@ GetoptResult parseCommandLine(Arguments)(ref string[] rawArgs, ref Arguments arg
     return getopt(rawArgs, makeGetOptArgs!arguments);
 }
 
-void printHelp(Arguments)(
+void printHelp(
     const string header,
-    const ref Arguments arguments,
     const GetoptResult getoptResult,
     Optional!string footer = none
 )
@@ -121,6 +120,7 @@ template makeGetOptArgs(alias arguments)
                 import std.string;
                 import std.range;
 
+                enum arguments = typeof(arguments).init;
                 string suffix;
 
                 static if (is(typeof(member) == bool) || is(typeof(member) == enum))

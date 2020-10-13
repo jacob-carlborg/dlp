@@ -2,7 +2,7 @@ module dlp.driver.command;
 
 import dlp.core.optional : Optional;
 
-class StandardArguments
+mixin template StandardArguments()
 {
     @("import-path|i", "Add <path> as an import path.")
     string[] importPaths;
@@ -50,7 +50,7 @@ abstract class Command(Arguments = void) : BaseCommand
             if (result.helpWanted)
             {
                 const header = format!"Usage: dlp %s %s"(name, usageHeader);
-                printHelp(header, arguments, result);
+                printHelp(header, result);
                 return true;
             }
 

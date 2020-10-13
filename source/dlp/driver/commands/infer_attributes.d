@@ -1,21 +1,24 @@
 module dlp.driver.commands.infer_attributes;
 
-import dlp.driver.command : Command, StandardArguments;
+import dlp.commands.infer_attributes : Config;
+import dlp.driver.command : Command;
 
-private class Arguments : StandardArguments
+private struct Arguments
 {
-    import dlp.commands.infer_attributes : Config;
+    import dlp.driver.command : StandardArguments;
 
-    private Config toConfig() const pure nothrow @nogc @safe
-    {
-        Config config = {
-            importPaths: importPaths,
-            stringImportPaths: stringImportPaths,
-            versionIdentifiers: versionIdentifiers,
-        };
+    mixin StandardArguments;
+}
 
-        return config;
-    }
+private Config toConfig(const ref Arguments self) pure nothrow @nogc @safe
+{
+    Config config = {
+        importPaths: self.importPaths,
+        stringImportPaths: self.stringImportPaths,
+        versionIdentifiers: self.versionIdentifiers,
+    };
+
+    return config;
 }
 
 class InferAttributes : Command!(Arguments)

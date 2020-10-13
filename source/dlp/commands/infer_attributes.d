@@ -16,8 +16,6 @@ import dlp.core.optional;
 import dlp.core.redirect;
 import dlp.core.set;
 
-Optional!string inputFilename;
-
 const struct Config
 {
     mixin StandardConfig;
@@ -74,7 +72,7 @@ const(Attributes[FuncDeclaration]) inferAttributes(
 
     with (config)
         return runParser(filename, content, versionIdentifiers, importPaths)
-            .inferAttributes(filename, stringImportPaths);
+            .inferAttributes(filename, stringImportPaths, config);
 }
 
 private:
@@ -82,7 +80,8 @@ private:
 const(Attributes[FuncDeclaration]) inferAttributes(
     Module module_,
     const string inputFilename,
-    const string[] stringImportPaths
+    const string[] stringImportPaths,
+    Config config
 )
 {
     import std.algorithm : each, map;
@@ -786,12 +785,12 @@ enum setup = q{
 }
 
 bool inferAttributesEqualsAttributes(
-    const string content, const Attributes attributes
+    const string content, const Attributes attributes, Config config = Config()
 )
 {
     import std.algorithm : find;
 
-    auto inferredAttributes = inferAttributes("test.d", content);
+    auto inferredAttributes = inferAttributes("test.d", content, config);
     assert(inferredAttributes.length > 0);
 
     return inferredAttributes.byValue.front == attributes;
