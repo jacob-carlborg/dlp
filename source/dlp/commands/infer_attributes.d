@@ -19,6 +19,8 @@ import dlp.core.set;
 const struct Config
 {
     mixin StandardConfig;
+
+    bool includeVirtualMethods;
 }
 
 struct Attributes
@@ -161,12 +163,14 @@ const(Attributes[FuncDeclaration]) inferAttributes(
         alias visit = typeof(super).visit;
 
         const string inputFilename;
+        const bool includeVirtualMethods;
         DeclaredAttributes declaredAttributes;
         StorageClassDeclaration[] storageClassDeclarations;
 
-        extern (D) this(const string inputFilename)
+        extern (D) this(const string inputFilename, bool includeVirtualMethods)
         {
             this.inputFilename = inputFilename;
+            this.includeVirtualMethods = includeVirtualMethods;
         }
 
         override void visit(FuncDeclaration func)
@@ -175,8 +179,17 @@ const(Attributes[FuncDeclaration]) inferAttributes(
                 if (!func.fbody)
                     return false;
 
-                return defaultCanInferAttributes(sc) ||
-                    func.loc.filename.fromStringz == inputFilename;
+                const originalResult = defaultCanInferAttributes(sc);
+
+                if (originalResult)
+                    return true;
+
+                const isFromInputFile = func.loc.filename.fromStringz == inputFilename;
+
+                return isFromInputFile && (
+                    !func.isVirtualMethod ||
+                    (func.isVirtualMethod && includeVirtualMethods)
+                );
             };
 
             declaredAttributes[cast(void*) func] =
@@ -248,7 +261,8 @@ const(Attributes[FuncDeclaration]) inferAttributes(
         }
     }
 
-    scope parseTimeVisitor = new ParseTimeVisitor(inputFilename);
+    scope parseTimeVisitor = new ParseTimeVisitor(inputFilename,
+        config.includeVirtualMethods);
     module_.accept(parseTimeVisitor);
 
     module_.runSemanticAnalyzer(stringImportPaths);
@@ -630,6 +644,53 @@ enum setup = q{
     };
 
     assert(inferAttributesEqualsAttributes(content, expected));
+}
+
+@test("virtual method") unittest
+{
+    mixin(setup);
+
+    enum content = q{
+        class Foo
+        {
+            int a;
+            void bar()
+            {
+                a = 3;
+            }
+        }
+    };
+
+    assert(inferAttributes("test.d", content).length == 0);
+}
+
+@test("virtual method - with includeVirtualMethods enabled in the config") unittest
+{
+    mixin(setup);
+
+    enum Attributes expected = {
+        isNogc: true,
+        isNothrow: true,
+        isPure: true,
+        isSafe: true
+    };
+
+    enum content = q{
+        class Foo
+        {
+            int a;
+            void bar()
+            {
+                a = 3;
+            }
+        }
+    };
+
+    Config config = {
+        includeVirtualMethods: true
+    };
+
+    assert(inferAttributesEqualsAttributes(content, expected, config));
 }
 
 @test("postblit") unittest

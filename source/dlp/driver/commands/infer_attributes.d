@@ -8,6 +8,9 @@ private struct Arguments
     import dlp.driver.command : StandardArguments;
 
     mixin StandardArguments;
+
+    @("include-virtual-methods", "Infer attributes for virtual methods [default].")
+    bool includeVirtualMethods = Config().includeVirtualMethods;
 }
 
 private Config toConfig(const ref Arguments self) pure nothrow @nogc @safe
