@@ -6,7 +6,7 @@ license "BSL-1.0"
 
 targetType "executable"
 mainSourceFile "source/dlp/driver/main.d"
-dependency "ddc" version="0.0.3"
+dependency "ddc" version="0.0.4"
 
 preGenerateCommands "$$DC -run $PACKAGE_DIR/tools/generate_version.d" platform="posix"
 preGenerateCommands "%DC% -run $PACKAGE_DIR/tools/generate_version.d" platform="windows"
