@@ -18,7 +18,8 @@ buildType "release" {
   buildOptions "optimize" "inline" platform="windows-ldc"
   buildOptions "optimize" platform="windows-dmd"
 
-  dflags "-flto=full" platform="posix-ldc"
+  // does not work for some reason. Causing errors like when linking: dlp.o:1:3: syntax error, unexpected $end
+  // dflags "-flto=full" platform="posix-ldc"
 
   lflags "-static" platform="linux-ldc"
   lflags "-dead_strip" platform="osx"

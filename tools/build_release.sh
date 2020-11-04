@@ -1,42 +1,66 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
-set -ex
+set -eu
+set -o pipefail
 
-function build {
-  dub build --verror -b release
+. ./tools/install_dc.sh
+
+build() {
+  dub build --verror -b release --compiler="${DMD}" --arch="${DLP_ARCH}"
   strip "$target_path"
 }
 
-function version {
+version() {
   "$target_path" --version
 }
 
-function arch {
-  uname -m
-}
-
-function os {
-  local os=$(uname | tr '[:upper:]' '[:lower:]')
-  [ "$os" = 'darwin' ] && echo 'macos' || echo "$os"
-}
-
-function release_name {
-  local release_name="$app_name-$(version)-$(os)"
-
-  if [ "$(os)" = 'macos' ]; then
-    echo "$release_name"
+arch() {
+  if [ "$(os)" = 'win' ]; then
+    [ "${DLP_ARCH}" = 'x86' ] && echo '32' || echo '64'
+  elif [ "$(os)" = 'darwin' ]; then
+    echo ''
   else
-    echo "$release_name-$(arch)"
+    echo "-$(uname -m)"
   fi
 }
 
-function archive {
-  tar Jcf "$(release_name).tar.xz" -C "$target_dir" "$app_name"
+os() {
+  local os=$(uname | tr '[:upper:]' '[:lower:]')
+
+  if [ "$os" = 'darwin' ]; then
+    echo 'macos'
+  elif echo "$os" | grep -i -q mingw; then
+    echo 'win'
+  else
+    echo "$os"
+  fi
+}
+
+os_version() {
+  if [ "$(os)" = 'freebsd' ]; then
+    freebsd-version | cut -d . -f 1
+  else
+    echo ''
+  fi
+}
+
+release_name() {
+  echo "$app_name-$(version)-$(os)$(os_version)$(arch)"
+}
+
+archive() {
+  if [ "$(os)" = 'win' ]; then
+    7z a "$(release_name).7z" "$target_path"
+  else
+    tar Jcf "$(release_name).tar.xz" -C "$target_dir" "$app_name"
+  fi
 }
 
 app_name="dlp"
 target_dir="."
-target_path="$target_dir/$app_name"
+extension=$([ "$(os)" = 'win' ] && echo '.exe' || echo '')
+target_path="${target_dir}/${app_name}${extension}"
 
+install_compiler
 build
 archive
