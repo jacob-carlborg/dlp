@@ -1,0 +1,114 @@
+# C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise
+
+name: CI
+
+on:
+  push:
+    branches: '*'
+    tags: v*
+  pull_request:
+    branches:
+      - master
+  schedule:
+    - cron: 0 0 * * *
+
+env:
+  MACOSX_DEPLOYMENT_TARGET: 10.9
+
+jobs:
+  test:
+    name: Test
+    runs-on: ${{ matrix.os }}
+    continue-on-error: ${{ matrix.nightly || false }}
+    strategy:
+      matrix:
+        os:
+          # - macOS-latest
+          - ubuntu-latest
+          # - windows-latest
+
+        compiler:
+          - dmd-latest
+          # - ldc-latest
+
+        # architecture: x86_64
+
+        include:
+          # - os: ubuntu-latest
+          #   compiler: dmd-beta
+          #
+          # - os: ubuntu-latest
+          #   compiler: ldc-beta
+          #
+          # - os: ubuntu-latest
+          #   compiler: dmd-master
+          #   nightly: true
+          #
+          # - os: ubuntu-latest
+          #   compiler: ldc-master
+          #   nightly: true
+
+          # - os: windows-latest
+          #   architecture: x86
+
+    steps:
+      - name: Install Compiler
+        uses: dlang-community/setup-dlang@v1
+        with:
+          compiler: ${{ matrix.compiler }}
+
+      - name: Set D Compiler Wrapper
+        run: echo "DMD=$([ "$DC" = 'ldc2' ] && echo 'ldmd2' || echo 'dmd')" >> $GITHUB_ENV
+        shell: bash
+
+      - name: Print D Compiler Version
+        run: $DMD --version
+        shell: bash
+
+      - name: Clone Repository
+        uses: actions/checkout@v2
+        with:
+          persist-credentials: false
+
+      - name: Test
+        run: dub test --compiler="$DMD" --DRT-gcopt=parallel:0 --arch=x86
+        shell: bash
+
+  # create_release:
+  #   name: Create Release
+  #   needs: test
+  #   if: startsWith(github.ref, 'refs/tags/v')
+  #   runs-on: macOS-latest
+  #   strategy:
+  #     matrix:
+  #       os:
+  #         - macOS-latest
+  #         - ubuntu-latest
+  #         - windows-latest
+  #   steps:
+  #     - name: Install Compiler
+  #       uses: dlang-community/setup-dlang@v1
+  #       with:
+  #         compiler: ldc-latest
+  #
+  #     - name: Clone Repository
+  #       uses: actions/checkout@v2
+  #       with:
+  #         persist-credentials: false
+  #
+  #     - name: Extract Version
+  #       id: version
+  #       run: echo ::set-output name=VERSION::${GITHUB_REF#refs/tags/v}
+  #
+  #     - name: Build
+  #       run: ./tools/build_release.sh
+  #
+  #     - name: Create Release
+  #       id: create_release
+  #       uses: softprops/action-gh-release@v1
+  #       with:
+  #         name: DLP ${{ steps.version.outputs.VERSION }}
+  #         draft: true
+  #         files: apple-sdk-generator*.tar.xz
+  #       env:
+  #         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
