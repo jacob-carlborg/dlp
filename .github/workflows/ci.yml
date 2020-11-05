@@ -1,5 +1,3 @@
-# C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise
-
 name: CI
 
 on:
@@ -15,81 +13,114 @@ on:
 env:
   MACOSX_DEPLOYMENT_TARGET: 10.9
 
+defaults:
+  run:
+    shell: bash
+
 jobs:
   test:
     name: Test
-    runs-on: ${{ matrix.os }}
-    continue-on-error: ${{ matrix.nightly || false }}
+    runs-on: ${{ matrix.os == 'freebsd' && 'macOS-latest' || matrix.os }}
+    continue-on-error: ${{ matrix.nightly == 'nightly' }}
+    env:
+      ARCH: ${{ matrix.arch }}
     strategy:
       matrix:
         os:
-          # - macOS-latest
+          - macOS-latest
           - ubuntu-latest
-          # - windows-latest
+          - windows-latest
+          - freebsd
 
         compiler:
           - dmd-latest
-          # - ldc-latest
+          - ldc-latest
 
-        # architecture: x86_64
+        arch: [x86_64]
 
         include:
-          # - os: ubuntu-latest
-          #   compiler: dmd-beta
-          #
-          # - os: ubuntu-latest
-          #   compiler: ldc-beta
-          #
-          # - os: ubuntu-latest
-          #   compiler: dmd-master
-          #   nightly: true
-          #
-          # - os: ubuntu-latest
-          #   compiler: ldc-master
-          #   nightly: true
+          - os: windows-latest
+            compiler: dmd-latest
+            arch: x86
 
-          # - os: windows-latest
-          #   architecture: x86
+          - os: windows-latest
+            compiler: ldc-latest
+            arch: x86
+
+          - os: ubuntu-latest
+            compiler: dmd-beta
+            arch: x86_64
+
+          - os: ubuntu-latest
+            compiler: ldc-beta
+            arch: x86_64
+
+          - os: ubuntu-latest
+            compiler: dmd-master
+            arch: x86_64
+            nightly: nightly
+
+          - os: ubuntu-latest
+            compiler: ldc-master
+            arch: x86_64
+            nightly: nightly
 
     steps:
-      - name: Install Compiler
-        uses: dlang-community/setup-dlang@v1
-        with:
-          compiler: ${{ matrix.compiler }}
-
-      - name: Set D Compiler Wrapper
-        run: echo "DMD=$([ "$DC" = 'ldc2' ] && echo 'ldmd2' || echo 'dmd')" >> $GITHUB_ENV
-        shell: bash
-
-      - name: Print D Compiler Version
-        run: $DMD --version
-        shell: bash
-
       - name: Clone Repository
         uses: actions/checkout@v2
         with:
           persist-credentials: false
 
+      - name: Set Environment Variables
+        run: |
+          echo "DLP_COMPILER=${{ matrix.compiler }}" >> $GITHUB_ENV
+          echo "DLP_ARCH=${{ matrix.arch }}" >> $GITHUB_ENV
+
+      - name: Install Compiler
+        uses: dlang-community/setup-dlang@v1
+        if: ${{ matrix.os != 'freebsd' }}
+        with:
+          compiler: ${{ matrix.compiler }}
+
       - name: Test
-        run: dub test --compiler="$DMD" --DRT-gcopt=parallel:0 --arch=x86
-        shell: bash
+        if: ${{ matrix.os != 'freebsd' }}
+        run: ./.github/workflows/ci.sh
+
+      - name: Test FreeBSD
+        if: ${{ matrix.os == 'freebsd' }}
+        uses: vmactions/freebsd-vm@v0.0.8
+        with:
+          usesh: true
+          envs: 'DLP_COMPILER DLP_ARCH'
+          run: |
+            pkg update
+            pkg install -y bash curl gnupg git llvm-90
+            ./.github/workflows/ci.sh
 
   # create_release:
   #   name: Create Release
   #   needs: test
   #   if: startsWith(github.ref, 'refs/tags/v')
-  #   runs-on: macOS-latest
+  #   runs-on: ${{ matrix.os }}
   #   strategy:
   #     matrix:
   #       os:
   #         - macOS-latest
   #         - ubuntu-latest
   #         - windows-latest
+  #
+  #       include:
+  #         - os: windows-latest
+  #           compiler: ldc-latest
+  #           arch: x86
   #   steps:
   #     - name: Install Compiler
   #       uses: dlang-community/setup-dlang@v1
   #       with:
   #         compiler: ldc-latest
+  #
+  #     - name: Print D Compiler Version
+  #       run: ldmd2 --version
   #
   #     - name: Clone Repository
   #       uses: actions/checkout@v2
@@ -109,6 +140,8 @@ jobs:
   #       with:
   #         name: DLP ${{ steps.version.outputs.VERSION }}
   #         draft: true
-  #         files: apple-sdk-generator*.tar.xz
+  #         files: |
+  #           dlp*.tar.xz
+  #           dlp*.7z
   #       env:
   #         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

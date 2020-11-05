@@ -1,6 +1,6 @@
 #!/bin/bash
 
-set -ex
+set -e
 
 function build {
   dub build --verror -b release
@@ -12,12 +12,23 @@ function version {
 }
 
 function arch {
-  uname -m
+  if [ "$(os)" = 'win' ]; then
+    [ "$ARCH" = 'x86' ] && echo '32' || echo '64'
+  else
+    uname -m
+  fi
 }
 
 function os {
   local os=$(uname | tr '[:upper:]' '[:lower:]')
-  [ "$os" = 'darwin' ] && echo 'macos' || echo "$os"
+
+  if [ "$os" = 'darwin' ]; then
+    echo 'macos'
+  elif echo "$os" | grep -i -q mingw; then
+    echo 'win'
+  else
+    echo "$os"
+  fi
 }
 
 function release_name {
@@ -25,18 +36,25 @@ function release_name {
 
   if [ "$(os)" = 'macos' ]; then
     echo "$release_name"
+  elif [ "$(os)" = 'win' ]; then
+    echo "${release_name}$(arch)"
   else
     echo "$release_name-$(arch)"
   fi
 }
 
 function archive {
-  tar Jcf "$(release_name).tar.xz" -C "$target_dir" "$app_name"
+  if [ "$(os)" = 'win' ]; then
+    7z a "$(release_name).7z" "$target_path"
+  else
+    tar Jcf "$(release_name).tar.xz" -C "$target_dir" "$app_name"
+  fi
 }
 
 app_name="dlp"
 target_dir="."
-target_path="$target_dir/$app_name"
+extension=$([ "$(os)" = 'win' ] && echo '.exe' || echo '')
+target_path="${target_dir}/${app_name}${extension}"
 
 build
 archive
