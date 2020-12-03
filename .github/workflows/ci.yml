@@ -23,7 +23,8 @@ jobs:
     runs-on: ${{ matrix.os == 'freebsd' && 'macOS-latest' || matrix.os }}
     continue-on-error: ${{ matrix.nightly == 'nightly' }}
     env:
-      ARCH: ${{ matrix.arch }}
+      DLP_ARCH: ${{ matrix.arch }}
+      DLP_COMPILER: ${{ matrix.compiler }}
     strategy:
       matrix:
         os:
@@ -71,10 +72,10 @@ jobs:
         with:
           persist-credentials: false
 
-      - name: Set Environment Variables
-        run: |
-          echo "DLP_COMPILER=${{ matrix.compiler }}" >> $GITHUB_ENV
-          echo "DLP_ARCH=${{ matrix.arch }}" >> $GITHUB_ENV
+      # - name: Set Environment Variables
+      #   run: |
+      #     echo "DLP_COMPILER=${{ matrix.compiler }}" >> $GITHUB_ENV
+      #     echo "DLP_ARCH=${{ matrix.arch }}" >> $GITHUB_ENV
 
       - name: Install Compiler
         uses: dlang-community/setup-dlang@v1
@@ -97,51 +98,65 @@ jobs:
             pkg install -y bash curl gnupg git llvm-90
             ./.github/workflows/ci.sh
 
-  # create_release:
-  #   name: Create Release
-  #   needs: test
-  #   if: startsWith(github.ref, 'refs/tags/v')
-  #   runs-on: ${{ matrix.os }}
-  #   strategy:
-  #     matrix:
-  #       os:
-  #         - macOS-latest
-  #         - ubuntu-latest
-  #         - windows-latest
-  #
-  #       include:
-  #         - os: windows-latest
-  #           compiler: ldc-latest
-  #           arch: x86
-  #   steps:
-  #     - name: Install Compiler
-  #       uses: dlang-community/setup-dlang@v1
-  #       with:
-  #         compiler: ldc-latest
-  #
-  #     - name: Print D Compiler Version
-  #       run: ldmd2 --version
-  #
-  #     - name: Clone Repository
-  #       uses: actions/checkout@v2
-  #       with:
-  #         persist-credentials: false
-  #
-  #     - name: Extract Version
-  #       id: version
-  #       run: echo ::set-output name=VERSION::${GITHUB_REF#refs/tags/v}
-  #
-  #     - name: Build
-  #       run: ./tools/build_release.sh
-  #
-  #     - name: Create Release
-  #       id: create_release
-  #       uses: softprops/action-gh-release@v1
-  #       with:
-  #         name: DLP ${{ steps.version.outputs.VERSION }}
-  #         draft: true
-  #         files: |
-  #           dlp*.tar.xz
-  #           dlp*.7z
-  #       env:
-  #         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+  create_release:
+    name: Create Release
+    needs: test
+    if: startsWith(github.ref, 'refs/tags/v')
+    runs-on: ${{ matrix.os }}
+    env:
+      DLP_ARCH: ${{ matrix.arch }}
+      DLP_COMPILER: ${{ matrix.compiler }}
+    strategy:
+      matrix:
+        os:
+          - macOS-latest
+          - ubuntu-latest
+          - windows-latest
+          - freebsd
+
+        include:
+          - os: windows-latest
+            arch: x86
+
+    steps:
+      - name: Clone Repository
+        uses: actions/checkout@v2
+        with:
+          persist-credentials: false
+
+      - name: Install Compiler
+        uses: dlang-community/setup-dlang@v1
+        if: ${{ matrix.os != 'freebsd' }}
+        with:
+          compiler: ldc-latest
+
+      - name: Extract Version
+        id: version
+        run: echo ::set-output name=VERSION::${GITHUB_REF#refs/tags/v}
+
+      - name: Build
+        if: ${{ matrix.os != 'freebsd' }}
+        run: ./tools/build_release.sh
+
+      - name: Build FreeBSD
+        if: ${{ matrix.os == 'freebsd' }}
+        uses: vmactions/freebsd-vm@v0.0.8
+        with:
+          usesh: true
+          envs: 'DLP_COMPILER DLP_ARCH'
+          run: |
+            pkg update
+            pkg install -y bash curl gnupg git llvm-90
+            ./tools/build_release.sh
+
+      - name: Create Release
+        id: create_release
+        uses: softprops/action-gh-release@v1
+        with:
+          name: DLP ${{ steps.version.outputs.VERSION }}
+          draft: true
+          files: |
+            dlp*.tar.xz
+            dlp*.7z
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

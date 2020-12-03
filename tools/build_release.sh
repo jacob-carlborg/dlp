@@ -14,8 +14,10 @@ function version {
 function arch {
   if [ "$(os)" = 'win' ]; then
     [ "$ARCH" = 'x86' ] && echo '32' || echo '64'
+  elif [ "$(os)" = 'darwin' ]; then
+    echo ''
   else
-    uname -m
+    echo "-$(uname -m)"
   fi
 }
 
@@ -31,16 +33,16 @@ function os {
   fi
 }
 
-function release_name {
-  local release_name="$app_name-$(version)-$(os)"
-
-  if [ "$(os)" = 'macos' ]; then
-    echo "$release_name"
-  elif [ "$(os)" = 'win' ]; then
-    echo "${release_name}$(arch)"
+function os_version {
+  if [ "$(os)" = 'freebsd' ]; then
+    freebsd-version | cut -d . -f 1
   else
-    echo "$release_name-$(arch)"
+    echo ''
   fi
+}
+
+function release_name {
+  echo "$app_name-$(version)-$(os)$(os_version)$(arch)"
 }
 
 function archive {
