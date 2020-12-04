@@ -94,7 +94,7 @@ jobs:
 
   create_release:
     name: Create Release
-    needs: test
+    # needs: test
     if: startsWith(github.ref, 'refs/tags/v')
     runs-on: ${{ matrix.os == 'freebsd' && 'macOS-latest' || matrix.os }}
     env:
