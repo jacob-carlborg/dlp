@@ -27,44 +27,43 @@ jobs:
       DLP_COMPILER: ${{ matrix.compiler }}
     strategy:
       matrix:
+        arch: [x86_64]
         os:
-          - macOS-latest
-          - ubuntu-latest
-          - windows-latest
+          # - macOS-latest
+          # - ubuntu-latest
+          # - windows-latest
           - freebsd
 
-        compiler:
-          - dmd-latest
-          - ldc-latest
-
-        arch: [x86_64]
-
-        include:
-          - os: windows-latest
-            compiler: dmd-latest
-            arch: x86
-
-          - os: windows-latest
-            compiler: ldc-latest
-            arch: x86
-
-          - os: ubuntu-latest
-            compiler: dmd-beta
-            arch: x86_64
-
-          - os: ubuntu-latest
-            compiler: ldc-beta
-            arch: x86_64
-
-          - os: ubuntu-latest
-            compiler: dmd-master
-            arch: x86_64
-            nightly: nightly
-
-          - os: ubuntu-latest
-            compiler: ldc-master
-            arch: x86_64
-            nightly: nightly
+        # compiler:
+        #   - dmd-latest
+        #   - ldc-latest
+        #
+        # include:
+        #   - os: windows-latest
+        #     compiler: dmd-latest
+        #     arch: x86
+        #
+        #   - os: windows-latest
+        #     compiler: ldc-latest
+        #     arch: x86
+        #
+        #   - os: ubuntu-latest
+        #     compiler: dmd-beta
+        #     arch: x86_64
+        #
+        #   - os: ubuntu-latest
+        #     compiler: ldc-beta
+        #     arch: x86_64
+        #
+        #   - os: ubuntu-latest
+        #     compiler: dmd-master
+        #     arch: x86_64
+        #     nightly: nightly
+        #
+        #   - os: ubuntu-latest
+        #     compiler: ldc-master
+        #     arch: x86_64
+        #     nightly: nightly
 
     steps:
       - name: Clone Repository
@@ -72,20 +71,15 @@ jobs:
         with:
           persist-credentials: false
 
-      # - name: Set Environment Variables
-      #   run: |
-      #     echo "DLP_COMPILER=${{ matrix.compiler }}" >> $GITHUB_ENV
-      #     echo "DLP_ARCH=${{ matrix.arch }}" >> $GITHUB_ENV
-
-      - name: Install Compiler
-        uses: dlang-community/setup-dlang@v1
-        if: ${{ matrix.os != 'freebsd' }}
-        with:
-          compiler: ${{ matrix.compiler }}
-
-      - name: Test
-        if: ${{ matrix.os != 'freebsd' }}
-        run: ./.github/workflows/ci.sh
+      # - name: Install Compiler
+      #   uses: dlang-community/setup-dlang@v1
+      #   if: ${{ matrix.os != 'freebsd' }}
+      #   with:
+      #     compiler: ${{ matrix.compiler }}
+      #
+      # - name: Test
+      #   if: ${{ matrix.os != 'freebsd' }}
+      #   run: ./.github/workflows/ci.sh
 
       - name: Test FreeBSD
         if: ${{ matrix.os == 'freebsd' }}
@@ -94,9 +88,10 @@ jobs:
           usesh: true
           envs: 'DLP_COMPILER DLP_ARCH'
           run: |
-            pkg update
-            pkg install -y bash curl gnupg git llvm-90
-            ./.github/workflows/ci.sh
+            ls -lh
+            # pkg update
+            # pkg install -y bash curl gnupg git llvm-90
+            # ./.github/workflows/ci.sh
 
   create_release:
     name: Create Release
@@ -108,6 +103,7 @@ jobs:
       DLP_COMPILER: ${{ matrix.compiler }}
     strategy:
       matrix:
+        arch: [x86_64]
         os:
           - macOS-latest
           - ubuntu-latest
