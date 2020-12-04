@@ -125,6 +125,12 @@ jobs:
         with:
           compiler: ldc-latest
 
+      - name: Install Compiler
+        if: ${{ matrix.os == 'freebsd' }}
+        with:
+          compiler: ldc-latest
+        run: ./tools/install_dc.sh
+
       - name: Build
         if: ${{ matrix.os != 'freebsd' }}
         run: ./tools/build_release.sh
