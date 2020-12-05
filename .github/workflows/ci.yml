@@ -79,7 +79,9 @@ jobs:
   #
   #     - name: Test
   #       if: ${{ matrix.os != 'freebsd' }}
-  #       run: ./.github/workflows/ci.sh
+  #       run: |
+  #         export DMD="$(./tools/install_dc.sh)"
+  #         ./.github/workflows/ci.sh
   #
   #     - name: Test FreeBSD
   #       if: ${{ matrix.os == 'freebsd' }}
@@ -90,6 +92,7 @@ jobs:
   #         run: |
   #           pkg update
   #           pkg install -y bash curl gnupg git llvm-90
+  #           export DMD="$(./tools/install_dc.sh)"
   #           ./.github/workflows/ci.sh
 
   create_release:
@@ -125,13 +128,11 @@ jobs:
         with:
           compiler: ldc-latest
 
-      - name: Install Compiler
-        if: ${{ matrix.os == 'freebsd' }}
-        run: ./tools/install_dc.sh
-
       - name: Build
         if: ${{ matrix.os != 'freebsd' }}
-        run: ./tools/build_release.sh
+        run: |
+          export DMD="$(./tools/install_dc.sh)"
+          ./tools/build_release.sh
 
       - name: Build FreeBSD
         if: ${{ matrix.os == 'freebsd' }}
@@ -142,6 +143,7 @@ jobs:
           run: |
             pkg update
             pkg install -y bash curl gnupg git llvm-90
+            export DMD="$(./tools/install_dc.sh)"
             ./tools/build_release.sh
 
       - name: Extract Version
