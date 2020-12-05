@@ -1,4 +1,4 @@
-function d_compiler {
+d_compiler() {
   case "${DLP_COMPILER}" in
     'dmd-latest') echo 'dmd' ;;
     'ldc-latest') echo 'ldc' ;;
@@ -8,7 +8,7 @@ function d_compiler {
   esac
 }
 
-function install_compiler {
+install_compiler() {
   if [ "$(uname)" = 'FreeBSD' ]; then
     local compiler="$(d_compiler)"
     curl -sS -L https://github.com/dlang/installer/raw/d97cec87e464a703c44128d72c9ba89576df6e5c/script/install.sh | bash -s "${compiler}"

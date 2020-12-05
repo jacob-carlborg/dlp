@@ -3,18 +3,18 @@
 set -eu
 set -o pipefail
 
-source ./install_dc.sh
+. ./install_dc.sh
 
-function build {
+build() {
   dub build --verror -b release --compiler="${DMD}" --arch="${DLP_ARCH}"
   strip "$target_path"
 }
 
-function version {
+version() {
   "$target_path" --version
 }
 
-function arch {
+arch() {
   if [ "$(os)" = 'win' ]; then
     [ "$ARCH" = 'x86' ] && echo '32' || echo '64'
   elif [ "$(os)" = 'darwin' ]; then
@@ -24,7 +24,7 @@ function arch {
   fi
 }
 
-function os {
+os() {
   local os=$(uname | tr '[:upper:]' '[:lower:]')
 
   if [ "$os" = 'darwin' ]; then
@@ -36,7 +36,7 @@ function os {
   fi
 }
 
-function os_version {
+os_version() {
   if [ "$(os)" = 'freebsd' ]; then
     freebsd-version | cut -d . -f 1
   else
@@ -44,11 +44,11 @@ function os_version {
   fi
 }
 
-function release_name {
+release_name() {
   echo "$app_name-$(version)-$(os)$(os_version)$(arch)"
 }
 
-function archive {
+archive() {
   if [ "$(os)" = 'win' ]; then
     7z a "$(release_name).7z" "$target_path"
   else
