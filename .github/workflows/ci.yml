@@ -79,9 +79,7 @@ jobs:
 
       - name: Test
         if: ${{ matrix.os != 'freebsd' }}
-        run: |
-          export DMD="$(./tools/install_dc.sh)"
-          ./.github/workflows/ci.sh
+        run: ./.github/workflows/ci.sh
 
       - name: Test FreeBSD
         if: ${{ matrix.os == 'freebsd' }}
@@ -129,9 +127,7 @@ jobs:
 
       - name: Build
         if: ${{ matrix.os != 'freebsd' }}
-        run: |
-          export DMD="$(./tools/install_dc.sh)"
-          ./tools/build_release.sh
+        run: ./tools/build_release.sh
 
       - name: Build FreeBSD
         if: ${{ matrix.os == 'freebsd' }}
