@@ -3,7 +3,7 @@
 set -eu
 set -o pipefail
 
-. ../../tools/install_dc.sh
+. ./tools/install_dc.sh
 
 print_d_compiler_version() {
   "${DMD}" --version

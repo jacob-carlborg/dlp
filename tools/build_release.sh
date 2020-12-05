@@ -3,7 +3,7 @@
 set -eu
 set -o pipefail
 
-. ./install_dc.sh
+. ./tools/install_dc.sh
 
 build() {
   dub build --verror -b release --compiler="${DMD}" --arch="${DLP_ARCH}"
