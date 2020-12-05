@@ -102,7 +102,7 @@ jobs:
     runs-on: ${{ matrix.os == 'freebsd' && 'macOS-latest' || matrix.os }}
     env:
       DLP_ARCH: ${{ matrix.arch }}
-      DLP_COMPILER: ${{ matrix.compiler }}
+      DLP_COMPILER: ldc-latest
     strategy:
       matrix:
         arch: [x86_64]
@@ -126,7 +126,7 @@ jobs:
         uses: dlang-community/setup-dlang@v1
         if: ${{ matrix.os != 'freebsd' }}
         with:
-          compiler: ldc-latest
+          compiler: ${{ env.DLP_COMPILER }}
 
       - name: Build
         if: ${{ matrix.os != 'freebsd' }}
