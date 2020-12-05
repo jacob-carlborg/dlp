@@ -3,12 +3,14 @@
 set -eu
 set -o pipefail
 
+. ../../tools/install_dc.sh
+
 function print_d_compiler_version {
   "${DMD}" --version
 }
 
 function run_tests {
-  dub test --compiler="${DMD}" --arch="${DLP_ARCH}"
+  dub test --verror --compiler="${DMD}" --arch="${DLP_ARCH}"
 }
 
 install_compiler

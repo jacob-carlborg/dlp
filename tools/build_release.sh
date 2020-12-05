@@ -3,8 +3,10 @@
 set -eu
 set -o pipefail
 
+. ./install_dc.sh
+
 function build {
-  dub build --verror -b release
+  dub build --verror -b release --compiler="${DMD}" --arch="${DLP_ARCH}"
   strip "$target_path"
 }
 
@@ -59,5 +61,6 @@ target_dir="."
 extension=$([ "$(os)" = 'win' ] && echo '.exe' || echo '')
 target_path="${target_dir}/${app_name}${extension}"
 
+install_compiler
 build
 archive

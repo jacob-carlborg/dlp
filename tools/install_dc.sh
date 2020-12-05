@@ -1,8 +1,3 @@
-#!/usr/bin/env bash
-
-set -eu
-set -o pipefail
-
 function d_compiler {
   case "${DLP_COMPILER}" in
     'dmd-latest') echo 'dmd' ;;
@@ -22,6 +17,3 @@ function install_compiler {
     export DMD="$([ "$DC" = 'ldc2' ] && echo 'ldmd2' || echo 'dmd')"
   fi
 }
-
-install_compiler
-echo "$DMD"
