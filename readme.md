@@ -11,10 +11,11 @@ accomplished by installing the DMD compiler: https://dlang.org/download.html.
 ## Download
 
 For the latest release see: [releases/latest](https://github.com/jacob-carlborg/dlp/releases/latest).
-Pre-compiled binaries are available for macOS and Linux as 64 bit binaries and
-Windows as 32 and 64 bit binaries. The Linux binaries are completely statically
-linked and should work on all distros. The macOS binaries should work on macOS
-Mavericks (10.9) and later.
+Pre-compiled binaries are available for macOS, Linux and FreeBSD as 64 bit
+binaries and Windows as 32 and 64 bit binaries. The Linux binaries are
+completely statically linked and should work on all distros. The macOS binaries
+should work on macOS Mavericks (10.9) and later. The FreeBSD binaries are
+compiled for FreeBSD 12.
 
 ## Commands
 
