@@ -1,6 +1,6 @@
 # DLP Changelog
 
-## Unreleased
+## 0.3.0
 
 ### New/Changed Features
 
@@ -12,6 +12,10 @@ regular functions
 given path as a string import path
 * Added a flag, `--version`, for all commands, which will set the given string
 as a version identifier
+
+#### Bugs Fixed
+
+* [Issue 3](https://github.com/jacob-carlborg/dlp/issues/3): Segmentation fault when processing out contract
 
 ## 0.1.0
 ### New/Changed Features
