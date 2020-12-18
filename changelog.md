@@ -4,6 +4,8 @@
 
 ### New/Changed Features
 
+* Add support for FreeBSD
+* Updated the D frontend DLP is using to DMD 2.094.1
 * Add new command, `infer-attributes`, which will infer the attributes of all
 regular functions
 * Added a flag, `--string-import-path`, for all commands, which will add the
