@@ -5,12 +5,16 @@ import dmd.dmodule : Module;
 import dmd.dsymbol : Dsymbol;
 import dmd.globals : Global;
 import dmd.root.outbuffer : OutBuffer;
+import dmd.target : Target;
 
 mixin template StandardConfig()
 {
+    import dmd.target : Target;
+
     string[] importPaths = [];
     string[] stringImportPaths = [];
     string[] versionIdentifiers = [];
+    Target.Architecture architecture = Target.defaultArchitecture;
 }
 
 class DiagnosticsException : Exception
@@ -63,36 +67,34 @@ bool hasErrors(const ref Global global) nothrow @nogc
     return global.errors > 0;
 }
 
-Module runFullFrontend(Ast = ASTCodegen)(
+Module runFullFrontend(Config, Ast = ASTCodegen)(
     const string filename,
     const string content,
-    const string[] versionIdentifiers,
-    const string[] importPaths,
-    const string[] stringImportPaths)
+    const ref Config config)
 {
 
-    return runParser!Ast(filename, content, versionIdentifiers, importPaths)
-        .runSemanticAnalyzer(stringImportPaths);
+    return runParser!(Config, Ast)(filename, content, config)
+        .runSemanticAnalyzer(config.stringImportPaths);
 }
 
-Module runParser(Ast = ASTCodegen)(
+Module runParser(Config, Ast = ASTCodegen)(
     const string filename,
     const string content,
-    const string[] versionIdentifiers,
-    const string[] importPaths)
+    const ref Config config)
 {
     import std.algorithm : each;
     import std.range : chain;
 
-    import dmd.frontend : addImport, initDMD, findImportPaths,
+    import dmd.frontend : addImport, ContractChecks, initDMD, findImportPaths,
         parseModule, parseImportPathsFromConfig;
     import dmd.globals : global;
+    import dmd.target : is64bit;
 
-    global.params.mscoff = global.params.is64bit;
-    initDMD(null, versionIdentifiers);
+    global.params.mscoff = config.architecture.is64bit;
+    initDMD(null, config.versionIdentifiers, ContractChecks(), config.architecture);
 
     findImportPaths
-        .chain(importPaths)
+        .chain(config.importPaths)
         .each!addImport;
 
     auto t = parseModule!Ast(filename, content);

@@ -22,10 +22,7 @@ Set!FuncDeclaration leafFunctions(
     scope (exit)
         deinitializeDMD();
 
-    with (config)
-        return runFullFrontend(
-            filename, content, versionIdentifiers, importPaths, stringImportPaths
-        ).leafFunctions();
+    return runFullFrontend(filename, content, config).leafFunctions();
 }
 
 private:

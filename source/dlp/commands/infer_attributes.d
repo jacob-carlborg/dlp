@@ -73,8 +73,8 @@ const(Attributes[FuncDeclaration]) inferAttributes(
         deinitializeDMD();
 
     with (config)
-        return runParser(filename, content, versionIdentifiers, importPaths)
-            .inferAttributes(filename, stringImportPaths, config);
+        return runParser(filename, content, config)
+            .inferAttributes(filename, config);
 }
 
 private:
@@ -82,8 +82,7 @@ private:
 const(Attributes[FuncDeclaration]) inferAttributes(
     Module module_,
     const string inputFilename,
-    const string[] stringImportPaths,
-    Config config
+    const ref Config config
 )
 {
     import std.algorithm : each, map;
@@ -265,7 +264,7 @@ const(Attributes[FuncDeclaration]) inferAttributes(
         config.includeVirtualMethods);
     module_.accept(parseTimeVisitor);
 
-    module_.runSemanticAnalyzer(stringImportPaths);
+    module_.runSemanticAnalyzer(config.stringImportPaths);
 
     scope visitor = new Visitor(parseTimeVisitor.declaredAttributes);
     module_.accept(visitor);

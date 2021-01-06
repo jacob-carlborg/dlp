@@ -1,5 +1,18 @@
 # DLP Changelog
 
+## Unreleased
+
+### New/Changed Features
+
+* Updated the D frontend DLP is using to DMD 2.095.0
+* Added the flag `--target-architecture` for all commands, which specifies the
+target architecture
+
+#### Bugs Fixed
+
+* [Issue 9](https://github.com/jacob-carlborg/dlp/issues/9): Test fails on FreeBSD using DMD 2.095.0
+* [Issue 7](https://github.com/jacob-carlborg/dlp/issues/7): DLP always runs as a 32 bit compiler
+
 ## 0.3.0
 
 ### New/Changed Features

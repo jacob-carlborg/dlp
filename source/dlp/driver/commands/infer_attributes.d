@@ -15,13 +15,8 @@ private struct Arguments
 
 private Config toConfig(const ref Arguments self) pure nothrow @nogc @safe
 {
-    Config config = {
-        importPaths: self.importPaths,
-        stringImportPaths: self.stringImportPaths,
-        versionIdentifiers: self.versionIdentifiers,
-    };
-
-    return config;
+    import dlp.driver.utility : toConfig;
+    return self.toConfig!Config;
 }
 
 class InferAttributes : Command!(Arguments)

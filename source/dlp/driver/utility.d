@@ -36,3 +36,18 @@ string toString(const ref Loc location) pure
         location.charnum
     );
 }
+
+Config toConfig(Config, Arguments)(const ref Arguments self) pure nothrow @nogc @safe
+{
+    import std.algorithm : map;
+    import std.array : join;
+    import std.range : only;
+
+    enum fields = __traits(allMembers, Arguments)
+        .only
+        .map!(name => name ~ ": self." ~ name)
+        .join(",\n");
+
+    mixin("Config config = {", fields , "};");
+    return config;
+}

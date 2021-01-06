@@ -2,8 +2,19 @@ module dlp.driver.command;
 
 import dlp.core.optional : Optional;
 
+struct DefaultConfig
+{
+    import dlp.commands.utility : StandardConfig;
+
+    mixin StandardConfig;
+}
+
 mixin template StandardArguments()
 {
+    import dmd.target : Target;
+
+    import dlp.driver.command : DefaultConfig;
+
     @("import-path|i", "Add <path> as an import path.")
     string[] importPaths;
 
@@ -12,6 +23,9 @@ mixin template StandardArguments()
 
     @("version", "Specify <version> version identifier.")
     string[] versionIdentifiers;
+
+    @("target-architecture", "Set <arch> as the target architecture [default].")
+    Target.Architecture architecture = DefaultConfig().architecture;
 }
 
 abstract class BaseCommand
