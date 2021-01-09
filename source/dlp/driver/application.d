@@ -56,6 +56,9 @@ private:
         @("frontend-version", "Print the version of the frontend DLP is using")
         bool frontendVersion;
 
+        @("print-config", "Print the configuration file that will be used and exit.")
+        bool printConfig;
+
         bool help;
         Optional!string command;
         string[] remainingArgs;
@@ -109,7 +112,7 @@ private:
         import std.format : format;
 
         if (auto invoker = command in commands)
-            return (*invoker)._run(args);
+            return (*invoker).start(args);
         else
             throw new CliException(format!`Unrecognized command "%s"`(command));
     }
@@ -198,6 +201,12 @@ private:
             return ExitStatus.stop;
         }
 
+        if (arguments.printConfig)
+        {
+            printConfig();
+            return ExitStatus.stop;
+        }
+
         if (arguments.command.empty)
         {
             stderr.writeln("No command specified");
@@ -224,6 +233,14 @@ private:
         scope(exit) global.deinitialize();
 
         writeln(global.versionString);
+    }
+
+    void printConfig()
+    {
+        import std.stdio : writeln;
+        import dmd.frontend : findConfigFilename;
+
+        writeln(findConfigFilename());
     }
 
     void printHelp(const ref Arguments arguments)

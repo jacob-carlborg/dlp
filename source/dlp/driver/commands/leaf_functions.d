@@ -1,11 +1,11 @@
 module dlp.driver.commands.leaf_functions;
 
 import dlp.commands.leaf_functions : Config;
-import dlp.driver.command : Command;
+import dlp.driver.commands.dlp_command : DlpCommand;
 
 private struct Arguments
 {
-    import dlp.driver.command : StandardArguments;
+    import dlp.driver.commands.dlp_command : StandardArguments;
 
     mixin StandardArguments;
 }
@@ -16,7 +16,7 @@ private Config toConfig(const ref Arguments self) pure nothrow @nogc @safe
     return self.toConfig!Config;
 }
 
-class LeafFunctions : Command!(Arguments)
+class LeafFunctions : DlpCommand!(Arguments)
 {
     import dmd.func : FuncDeclaration;
 
@@ -44,7 +44,7 @@ class LeafFunctions : Command!(Arguments)
             "have a body.");
     }
 
-    override void run(ref Arguments args, const string[] remainingArgs) const
+    override void run(const string[] remainingArgs) const
     {
         import std.algorithm : each, map, sort;
         import std.array : array, empty;
@@ -64,7 +64,7 @@ class LeafFunctions : Command!(Arguments)
 
         remainingArgs
             .map!(e => tuple(e, readText(e)))
-            .flatMap!(e => leafFunctions(e.expand, args.toConfig)[])
+            .flatMap!(e => leafFunctions(e.expand, arguments.toConfig)[])
             .map!toLeafFunction
             .array
             .sort!sortByLine
@@ -112,10 +112,9 @@ import dlp.core.test;
     import std.exception : assertThrown;
     import dlp.driver.utility : MissingArgumentException;
 
-    Arguments arguments;
     string[] inputFiles = [];
 
     assertThrown!MissingArgumentException(
-        new LeafFunctions().run(arguments, inputFiles)
+        new LeafFunctions().run(inputFiles)
     );
 }

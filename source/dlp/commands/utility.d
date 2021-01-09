@@ -10,10 +10,12 @@ import dmd.target : Target;
 mixin template StandardConfig()
 {
     import dmd.target : Target;
+    import dlp.core.optional : Optional, none;
 
     string[] importPaths = [];
     string[] stringImportPaths = [];
     string[] versionIdentifiers = [];
+    Optional!string configFilename = none;
     Target.Architecture architecture = Target.defaultArchitecture;
 }
 
@@ -90,10 +92,12 @@ Module runParser(Config, Ast = ASTCodegen)(
     import dmd.globals : global;
     import dmd.target : is64bit;
 
+    import dlp.core.optional : or;
+
     global.params.mscoff = config.architecture.is64bit;
     initDMD(null, config.versionIdentifiers, ContractChecks(), config.architecture);
 
-    findImportPaths
+    findImportPaths(config.configFilename.or(""))
         .chain(config.importPaths)
         .each!addImport;
 

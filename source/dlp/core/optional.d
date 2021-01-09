@@ -132,7 +132,7 @@ struct Optional(T)
         assert(b.empty);
     }
 
-    T front()
+    inout(T) front() inout
     {
         return get;
     }

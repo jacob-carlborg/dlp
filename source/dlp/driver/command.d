@@ -2,32 +2,6 @@ module dlp.driver.command;
 
 import dlp.core.optional : Optional;
 
-struct DefaultConfig
-{
-    import dlp.commands.utility : StandardConfig;
-
-    mixin StandardConfig;
-}
-
-mixin template StandardArguments()
-{
-    import dmd.target : Target;
-
-    import dlp.driver.command : DefaultConfig;
-
-    @("import-path|i", "Add <path> as an import path.")
-    string[] importPaths;
-
-    @("string-import-path", "Add <path> as a string import path.")
-    string[] stringImportPaths;
-
-    @("version", "Specify <version> version identifier.")
-    string[] versionIdentifiers;
-
-    @("target-architecture", "Set <arch> as the target architecture [default].")
-    Target.Architecture architecture = DefaultConfig().architecture;
-}
-
 abstract class BaseCommand
 {
     abstract string name() const;
@@ -35,17 +9,29 @@ abstract class BaseCommand
     abstract string usageHeader() const;
 
     // Not part of the public API.
-    abstract bool _run(string[] rawArgs) const;
+    bool start(string[] rawArgs)
+    {
+        beforeRun();
+        return _run(rawArgs);
+    }
+
+    protected void beforeRun()
+    {
+
+    }
+
+    // Not part of the public API.
+    protected abstract bool _run(string[] rawArgs);
 }
 
 abstract class Command(Arguments = void) : BaseCommand
 {
-    static if (is(Arguments == void))
-        abstract void run(const string[] remainingArgs) const;
-    else
-        abstract void run(ref Arguments args, const string[] remainingArgs) const;
+    static if (!is(Arguments == void))
+        protected Arguments arguments;
 
-    override bool _run(string[] rawArgs) const
+    abstract void run(const string[] remainingArgs) const;
+
+    protected override bool _run(string[] rawArgs)
     {
         static if (is(Arguments == void))
             run(rawArgs[1 .. $]);
@@ -53,11 +39,6 @@ abstract class Command(Arguments = void) : BaseCommand
         {
             import std.format : format;
             import dlp.driver.cli : parseCommandLine, printHelp;
-
-            static if (is(Arguments : Object))
-                auto arguments = new Arguments;
-            else
-                Arguments arguments;
 
             auto result = parseCommandLine(rawArgs, arguments);
 
@@ -68,7 +49,7 @@ abstract class Command(Arguments = void) : BaseCommand
                 return true;
             }
 
-            run(arguments, rawArgs[1 .. $]);
+            run(rawArgs[1 .. $]);
         }
 
         return true;

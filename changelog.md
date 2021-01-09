@@ -7,6 +7,10 @@
 * Updated the D frontend DLP is using to DMD 2.095.0
 * Added the flag `--target-architecture` for all commands, which specifies the
 target architecture
+* Added the flag `--config` for all commands, which will set the configuration
+file
+* Added the global flag `--print-config`, which will print the default
+configuration file
 
 #### Bugs Fixed
 

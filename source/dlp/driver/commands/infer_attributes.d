@@ -1,11 +1,11 @@
 module dlp.driver.commands.infer_attributes;
 
 import dlp.commands.infer_attributes : Config;
-import dlp.driver.command : Command;
+import dlp.driver.commands.dlp_command : DlpCommand;
 
 private struct Arguments
 {
-    import dlp.driver.command : StandardArguments;
+    import dlp.driver.commands.dlp_command : StandardArguments;
 
     mixin StandardArguments;
 
@@ -19,7 +19,7 @@ private Config toConfig(const ref Arguments self) pure nothrow @nogc @safe
     return self.toConfig!Config;
 }
 
-class InferAttributes : Command!(Arguments)
+class InferAttributes : DlpCommand!(Arguments)
 {
     import dmd.func : FuncDeclaration;
 
@@ -48,7 +48,7 @@ class InferAttributes : Command!(Arguments)
             "functions that are not already declared.");
     }
 
-    override void run(ref Arguments args, const string[] remainingArgs) const
+    override void run(const string[] remainingArgs) const
     {
         import std.algorithm : each, map, sort;
         import std.array : array, empty;
@@ -73,7 +73,7 @@ class InferAttributes : Command!(Arguments)
 
         remainingArgs
             .map!(e => tuple(e, readText(e)))
-            .flatMap!(e => inferAttributes(e.expand, args.toConfig).byKeyValue)
+            .flatMap!(e => inferAttributes(e.expand, arguments.toConfig).byKeyValue)
             .map!(e => toInferredAttributes(e.key, e.value))
             .array
             .sort!sortByLocation
@@ -149,10 +149,9 @@ import dlp.core.test;
     import std.exception : assertThrown;
     import dlp.driver.utility : MissingArgumentException;
 
-    Arguments arguments;
     string[] inputFiles = [];
 
     assertThrown!MissingArgumentException(
-        new InferAttributes().run(arguments, inputFiles)
+        new InferAttributes().run(inputFiles)
     );
 }
