@@ -11,14 +11,11 @@ abstract class BaseCommand
     // Not part of the public API.
     bool start(string[] rawArgs)
     {
-        beforeRun();
         return _run(rawArgs);
     }
 
-    protected void beforeRun()
-    {
-
-    }
+    protected void beforeCommandLineParsing(string[] rawArgs) {}
+    protected void afterCommandLineParsing(string[] remainingArgs) {}
 
     // Not part of the public API.
     protected abstract bool _run(string[] rawArgs);
@@ -40,7 +37,9 @@ abstract class Command(Arguments = void) : BaseCommand
             import std.format : format;
             import dlp.driver.cli : parseCommandLine, printHelp;
 
+            beforeCommandLineParsing(rawArgs);
             auto result = parseCommandLine(rawArgs, arguments);
+            afterCommandLineParsing(rawArgs[1 .. $]);
 
             if (result.helpWanted)
             {
