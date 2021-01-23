@@ -24,18 +24,22 @@ mixin template StandardArguments()
 
 abstract class DlpCommand(Arguments) : Command!Arguments
 {
-    override void beforeRun()
+    protected override void beforeCommandLineParsing(string[] rawArgs)
     {
-        import dmd.frontend : findConfigFilename;
-
 		static struct TempConfig
         {
             import dlp.commands.utility : StandardConfig;
-
             mixin StandardConfig;
         }
 
-        arguments.configFilename = findConfigFilename();
         arguments.architecture = TempConfig().architecture;
+    }
+
+    protected override void afterCommandLineParsing(string[] remainingArgs)
+    {
+        import dmd.frontend : findConfigFilename;
+
+        if (arguments.configFilename.length == 0)
+            arguments.configFilename = findConfigFilename();
     }
 }

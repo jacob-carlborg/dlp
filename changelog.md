@@ -4,6 +4,7 @@
 
 ### New/Changed Features
 
+* Added support for locating DMD/LDC config when they're installed via Snap
 * Updated the D frontend DLP is using to DMD 2.095.0
 * Added the flag `--target-architecture` for all commands, which specifies the
 target architecture
@@ -14,6 +15,7 @@ configuration file
 
 #### Bugs Fixed
 
+* [Issue 8](https://github.com/jacob-carlborg/dlp/issues/8): How to avoid "No valid config found." with snap?
 * [Issue 9](https://github.com/jacob-carlborg/dlp/issues/9): Test fails on FreeBSD using DMD 2.095.0
 * [Issue 7](https://github.com/jacob-carlborg/dlp/issues/7): DLP always runs as a 32 bit compiler
 
