@@ -83,7 +83,7 @@ jobs:
 
       - name: Test FreeBSD
         if: ${{ matrix.os == 'freebsd' }}
-        uses: vmactions/freebsd-vm@v0.0.8
+        uses: vmactions/freebsd-vm@v0.1.2
         with:
           usesh: true
           envs: 'DLP_COMPILER DLP_ARCH'
